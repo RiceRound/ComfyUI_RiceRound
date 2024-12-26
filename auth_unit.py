@@ -17,10 +17,12 @@ class AuthUnit:
 		return A._instance
 	def __init__(A):
 		B=True
-		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.initialized=B
+		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.temp_token='';A.initialized=B
 	def load_config(A):B=configparser.ConfigParser();B.read(A.config_path,encoding=_A);A.auto_login=B.get(_B,'auto_login',fallback=False)
+	def set_temp_token(A,temp_token):A.temp_token=temp_token
 	def get_user_token(B):
 		A=B.read_user_token()
+		if not A and B.temp_token:A=B.temp_token
 		if A and time.time()-B.last_check_time>120:
 			try:
 				D=urllib.request.Request(B.url_config.login_api_url,headers={'Content-Type':'application/json','Authorization':f"Bearer {A}"},method='GET')
@@ -53,13 +55,14 @@ class AuthUnit:
 			if not D:return''
 			return AuthUnit._decrypt(D,A.shift_key)
 		except Exception as E:print(f"Error reading token: {E}");return''
-	def save_user_token(B,user_token):
+	def save_user_token(A,user_token):
 		'Encrypt and save the user token.';C=user_token
 		if not C:return
+		if C==A.temp_token:return
 		try:
-			A=configparser.ConfigParser()
-			if os.path.exists(B.config_path):A.read(B.config_path,encoding=_A)
-			if _B not in A:A.add_section(_B)
-			E=AuthUnit._encrypt(C,B.shift_key);A[_B][_D]=E
-			with open(B.config_path,'w',encoding=_A)as F:A.write(F)
+			B=configparser.ConfigParser()
+			if os.path.exists(A.config_path):B.read(A.config_path,encoding=_A)
+			if _B not in B:B.add_section(_B)
+			E=AuthUnit._encrypt(C,A.shift_key);B[_B][_D]=E
+			with open(A.config_path,'w',encoding=_A)as F:B.write(F)
 		except Exception as D:print(f"Error saving token: {D}");raise RuntimeError(f"Failed to save token: {D}")
