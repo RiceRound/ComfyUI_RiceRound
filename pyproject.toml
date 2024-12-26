@@ -10,6 +10,6 @@ Repository = "https://github.com/RiceRound/ComfyUI_RiceRound"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = "@riceround"
+PublisherId = "riceround"
 DisplayName = "ComfyUI_RiceRound"
 Icon = "https://www.riceround.online/RiceRound.ico"
