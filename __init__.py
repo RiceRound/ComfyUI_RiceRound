@@ -1,32 +1,33 @@
-_d='RiceRoundTempTokenNode'
-_c='RiceRoundOutputImageNode'
-_b='RiceRoundEncryptNode'
-_a='RiceRoundOutputTextNode'
-_Z='RiceRoundOutputBooleanNode'
-_Y='RiceRoundOutputFloatNode'
-_X='RiceRoundOutputIntNode'
-_W='RiceRoundOutputMaskBridgeNode'
-_V='RiceRoundUploadImageNode'
-_U='RiceRoundImageUrlNode'
-_T='RiceRoundOutputImageBridgeNode'
-_S='RiceRoundDecryptNode'
-_R='RiceRoundStrToBooleanNode'
-_Q='RiceRoundStrToFloatNode'
-_P='RiceRoundStrToIntNode'
-_O='RiceRoundBooleanNode'
-_N='RiceRoundFloatNode'
-_M='RiceRoundIntNode'
-_L='RiceRoundDownloadMaskNode'
-_K='RiceRoundMaskBridgeNode'
-_J='RiceRoundInputTextNode'
-_I='RiceRoundRandomSeedNode'
-_H='RiceRoundDownloadImageNode'
-_G='RiceRoundSimpleImageNode'
-_F='RiceRoundImageBridgeNode'
-_E='RiceRoundDebugNode'
-_D='RiceRoundAdvancedChoiceNode'
-_C='RiceRoundSimpleChoiceNode'
-_B='dynamic_class'
+_e='RiceRoundTempTokenNode'
+_d='RiceRoundOutputImageNode'
+_c='RiceRoundEncryptNode'
+_b='RiceRoundOutputTextNode'
+_a='RiceRoundOutputBooleanNode'
+_Z='RiceRoundOutputFloatNode'
+_Y='RiceRoundOutputIntNode'
+_X='RiceRoundOutputMaskBridgeNode'
+_W='RiceRoundUploadImageNode'
+_V='RiceRoundImageUrlNode'
+_U='RiceRoundOutputImageBridgeNode'
+_T='RiceRoundDecryptNode'
+_S='RiceRoundStrToBooleanNode'
+_R='RiceRoundStrToFloatNode'
+_Q='RiceRoundStrToIntNode'
+_P='RiceRoundBooleanNode'
+_O='RiceRoundFloatNode'
+_N='RiceRoundIntNode'
+_M='RiceRoundDownloadMaskNode'
+_L='RiceRoundMaskBridgeNode'
+_K='RiceRoundInputTextNode'
+_J='RiceRoundRandomSeedNode'
+_I='RiceRoundDownloadImageNode'
+_H='RiceRoundSimpleImageNode'
+_G='RiceRoundImageBridgeNode'
+_F='RiceRoundDebugNode'
+_E='RiceRoundAdvancedChoiceNode'
+_D='RiceRoundSimpleChoiceNode'
+_C='dynamic_class'
+_B='error'
 _A='display_name'
 import platform,random
 from urllib.parse import unquote
@@ -43,11 +44,11 @@ from.rice_url_config import RiceUrlConfig
 from.rice_prompt_info import RicePromptInfo
 def create_dynamic_nodes(base_class):
 	rice_prompt_info=RicePromptInfo();dynamic_classes={}
-	for(node_name,info)in rice_prompt_info.choice_classname_map.items():class_name=node_name;category='RiceRound/Advanced/Choice';dynamic_class=type(class_name,(base_class,),{'__node_name__':node_name,'CATEGORY':category});dynamic_classes[class_name]={_B:dynamic_class,_A:info.get(_A,class_name)}
+	for(node_name,info)in rice_prompt_info.choice_classname_map.items():class_name=node_name;category='RiceRound/Advanced/Choice';dynamic_class=type(class_name,(base_class,),{'__node_name__':node_name,'CATEGORY':category});dynamic_classes[class_name]={_C:dynamic_class,_A:info.get(_A,class_name)}
 	return dynamic_classes
 dynamic_choice_nodes=create_dynamic_nodes(RiceRoundBaseChoiceNode)
-NODE_CLASS_MAPPINGS={_C:RiceRoundSimpleChoiceNode,_D:RiceRoundAdvancedChoiceNode,_E:RiceRoundDebugNode,_F:RiceRoundImageBridgeNode,_G:RiceRoundSimpleImageNode,_H:RiceRoundDownloadImageNode,_I:RiceRoundRandomSeedNode,_J:RiceRoundInputTextNode,_K:RiceRoundMaskBridgeNode,_L:RiceRoundDownloadMaskNode,_M:RiceRoundIntNode,_N:RiceRoundFloatNode,_O:RiceRoundBooleanNode,_P:RiceRoundStrToIntNode,_Q:RiceRoundStrToFloatNode,_R:RiceRoundStrToBooleanNode,_S:RiceRoundDecryptNode,_T:RiceRoundOutputImageBridgeNode,_U:RiceRoundImageUrlNode,_V:RiceRoundUploadImageNode,_W:RiceRoundOutputMaskBridgeNode,_X:RiceRoundOutputIntNode,_Y:RiceRoundOutputFloatNode,_Z:RiceRoundOutputBooleanNode,_a:RiceRoundOutputTextNode,_b:RiceRoundEncryptNode,_c:RiceRoundOutputImageNode,_d:RiceRoundTempTokenNode,**{name:cls[_B]for(name,cls)in dynamic_choice_nodes.items()}}
-NODE_DISPLAY_NAME_MAPPINGS={_C:'Simple Choice',_D:'Advanced Choice',_E:'Debug',_F:'Image Bridge',_G:'Simple Image',_H:'Download Image',_I:'Random Seed',_J:'Input Text',_K:'Mask Bridge',_L:'Download Mask',_M:'RiceRound Int',_N:'RiceRound Float',_O:'RiceRound Boolean',_P:'RiceRound Str To Int',_Q:'RiceRound Str To Float',_R:'RiceRound Str To Boolean',_S:'Decrypt',_T:'Output Image Bridge',_U:'Image URL',_V:'Upload Image',_W:'Output Mask Bridge',_X:'Output Int',_Y:'Output Float',_Z:'Output Boolean',_a:'Output Text',_b:'Encrypt',_c:'Output Image',_d:'Temp Token',**{name:cls[_A]for(name,cls)in dynamic_choice_nodes.items()}}
+NODE_CLASS_MAPPINGS={_D:RiceRoundSimpleChoiceNode,_E:RiceRoundAdvancedChoiceNode,_F:RiceRoundDebugNode,_G:RiceRoundImageBridgeNode,_H:RiceRoundSimpleImageNode,_I:RiceRoundDownloadImageNode,_J:RiceRoundRandomSeedNode,_K:RiceRoundInputTextNode,_L:RiceRoundMaskBridgeNode,_M:RiceRoundDownloadMaskNode,_N:RiceRoundIntNode,_O:RiceRoundFloatNode,_P:RiceRoundBooleanNode,_Q:RiceRoundStrToIntNode,_R:RiceRoundStrToFloatNode,_S:RiceRoundStrToBooleanNode,_T:RiceRoundDecryptNode,_U:RiceRoundOutputImageBridgeNode,_V:RiceRoundImageUrlNode,_W:RiceRoundUploadImageNode,_X:RiceRoundOutputMaskBridgeNode,_Y:RiceRoundOutputIntNode,_Z:RiceRoundOutputFloatNode,_a:RiceRoundOutputBooleanNode,_b:RiceRoundOutputTextNode,_c:RiceRoundEncryptNode,_d:RiceRoundOutputImageNode,_e:RiceRoundTempTokenNode,**{name:cls[_C]for(name,cls)in dynamic_choice_nodes.items()}}
+NODE_DISPLAY_NAME_MAPPINGS={_D:'Simple Choice',_E:'Advanced Choice',_F:'Debug',_G:'Image Bridge',_H:'Simple Image',_I:'Download Image',_J:'Random Seed',_K:'Input Text',_L:'Mask Bridge',_M:'Download Mask',_N:'RiceRound Int',_O:'RiceRound Float',_P:'RiceRound Boolean',_Q:'RiceRound Str To Int',_R:'RiceRound Str To Float',_S:'RiceRound Str To Boolean',_T:'Decrypt',_U:'Output Image Bridge',_V:'Image URL',_W:'Upload Image',_X:'Output Mask Bridge',_Y:'Output Int',_Z:'Output Float',_a:'Output Boolean',_b:'Output Text',_c:'Encrypt',_d:'Output Image',_e:'Temp Token',**{name:cls[_A]for(name,cls)in dynamic_choice_nodes.items()}}
 WEB_DIRECTORY='./js'
 __all__=['NODE_CLASS_MAPPINGS','NODE_DISPLAY_NAMES_MAPPINGS','WEB_DIRECTORY']
 handler_instance=RiceRoundPromptHandler()
@@ -66,14 +67,16 @@ async def auth_callback(request):
 async def set_node_additional_info(request):additional_info=await request.json();RicePromptInfo().set_node_additional_info(additional_info);return web.json_response({},status=200)
 @routes.get('/riceround/open_selector_list_folder')
 async def open_selector_list_folder(request):
-	A='error';choice_server_folder=RicePromptInfo().get_choice_server_folder()
-	if not choice_server_folder.exists():return web.json_response({A:'Folder does not exist'},status=404)
+	choice_server_folder=RicePromptInfo().get_choice_server_folder()
+	if not choice_server_folder.exists():return web.json_response({_B:'Folder does not exist'},status=404)
 	system=platform.system()
 	try:
 		if system=='Windows':os.startfile(choice_server_folder)
 		elif system=='Darwin':subprocess.run(['open',choice_server_folder])
 		else:subprocess.run(['xdg-open',choice_server_folder])
 		return web.json_response({'status':'success'},status=200)
-	except Exception as e:return web.json_response({A:str(e)},status=500)
+	except Exception as e:return web.json_response({_B:str(e)},status=500)
 @routes.post('/riceround/set_long_token')
-async def set_long_token(request):long_token=await request.json();AuthUnit().set_user_long_token(long_token);return web.json_response({},status=200)
+async def set_long_token(request):
+	try:request_data=await request.json();long_token=request_data.get('long_token','');AuthUnit().set_user_long_token(long_token);return web.json_response({},status=200)
+	except Exception as e:return web.json_response({_B:str(e)},status=500)

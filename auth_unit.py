@@ -20,10 +20,10 @@ class AuthUnit:
 		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.temp_token='';A.long_token='';A.initialized=B
 	def load_config(A):B=configparser.ConfigParser();B.read(A.config_path,encoding=_A);A.auto_login=B.get(_B,'auto_login',fallback=False)
 	def set_temp_token(A,temp_token):A.temp_token=temp_token
-	def set_user_long_token(B,long_token):
-		A=long_token
-		if not A:B.long_token=''
-		elif len(A)==64:B.long_token=A
+	def set_user_long_token(A,long_token):
+		B=long_token
+		if not B:A.long_token=''
+		elif len(B)==64:A.long_token=B;A.clear_user_token()
 	def get_user_token(B):
 		A=''
 		if B.long_token:A=B.long_token
@@ -72,4 +72,12 @@ class AuthUnit:
 			E=AuthUnit._encrypt(C,A.shift_key);B[_B][_D]=E
 			with open(A.config_path,'w',encoding=_A)as F:B.write(F)
 		except Exception as D:print(f"Error saving token: {D}");raise RuntimeError(f"Failed to save token: {D}")
-	def clear_user_token(A):A.save_user_token('')
+	def clear_user_token(B):
+		if not os.path.exists(B.config_path):return
+		try:
+			A=configparser.ConfigParser();A.read(B.config_path,encoding=_A)
+			if _B not in A:return
+			if _D not in A[_B]:return
+			A[_B][_D]=''
+			with open(B.config_path,'w',encoding=_A)as D:A.write(D)
+		except Exception as C:print(f"Error clearing token: {C}");raise RuntimeError(f"Failed to clear token: {C}")
