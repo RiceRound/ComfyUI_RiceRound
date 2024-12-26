@@ -75,3 +75,5 @@ async def open_selector_list_folder(request):
 		else:subprocess.run(['xdg-open',choice_server_folder])
 		return web.json_response({'status':'success'},status=200)
 	except Exception as e:return web.json_response({A:str(e)},status=500)
+@routes.post('/riceround/set_long_token')
+async def set_long_token(request):long_token=await request.json();AuthUnit().set_user_long_token(long_token);return web.json_response({},status=200)

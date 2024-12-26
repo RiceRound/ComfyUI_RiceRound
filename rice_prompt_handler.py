@@ -27,6 +27,7 @@ class RiceRoundPromptHandler:
 			if A.get(_B)=='RiceRoundTempTokenNode':B=A.get(_C,{}).get('text','')
 			if A.get(_B)=='RiceRoundDecryptNode':C=A
 		if B and C:AuthUnit().set_temp_token(B)
+		else:AuthUnit().set_temp_token('')
 	def parse_template(E,template_data):
 		B={};C={};D=template_data['elements']
 		for A in D:id=A['id'];C[id]=A['node_id'];B[id]=A['type']
