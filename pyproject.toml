@@ -1,0 +1,15 @@
+[project]
+name = "comfyui_riceround"
+description = "A tool for generating encrypted workflows and commercializing AI nodes for ComfyUI."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["aiohttp", "pyzipper", "websockets"]
+
+[project.urls]
+Repository = "https://github.com/RiceRound/ComfyUI_RiceRound"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "@riceround"
+DisplayName = "ComfyUI_RiceRound"
+Icon = "https://www.riceround.online/RiceRound.ico"
