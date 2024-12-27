@@ -13,7 +13,7 @@ from PIL import Image
 from io import BytesIO
 import numpy as np,requests
 from urllib.parse import urljoin
-from.utils import get_local_app_path
+from.utils import get_local_app_setting_path
 DEFAULT_SUBDOMAIN='api'if os.getenv('DEBUG')!='true'else'test'
 DEFAULT_URL_PREFIX=f"https://{DEFAULT_SUBDOMAIN}.riceround.online"
 DEFAULT_WS_PREFIX=f"wss://{DEFAULT_SUBDOMAIN}.riceround.online"
@@ -28,10 +28,10 @@ class RiceUrlConfig:
 	def __init__(A):
 		if not A._initialized:A.comfyui_local_web_server_info={};A.load_comfyui_local_web_server_info();A.server_info={};A.load_server_info();A._initialized=True
 	def set_comfyui_local_web_server_info(B,local_server_info):
-		A=local_server_info;B.comfyui_local_web_server_info=A;C=get_local_app_path();D=C/_C
+		A=local_server_info;B.comfyui_local_web_server_info=A;C=get_local_app_setting_path();D=C/_C
 		with open(D,'w')as E:json.dump(A,E)
 	def load_comfyui_local_web_server_info(A):
-		C=get_local_app_path();B=C/_C
+		C=get_local_app_setting_path();B=C/_C
 		if B.exists():
 			with open(B,'r')as D:A.comfyui_local_web_server_info=json.load(D)
 		else:A.comfyui_local_web_server_info={}
@@ -44,10 +44,10 @@ class RiceUrlConfig:
 		if B and isinstance(B,dict):
 			A=B.get(_A)
 			if A and isinstance(A,dict):
-				C.server_info=A;D=get_local_app_path()
+				C.server_info=A;D=get_local_app_setting_path()
 				with open(D/_D,'w')as E:json.dump(A,E)
 	def load_server_info(B):
-		C=get_local_app_path();A=C/_D
+		C=get_local_app_setting_path();A=C/_D
 		if A.exists():
 			with open(A,'r')as D:B.server_info=json.load(D)
 	def get_server_url(A,url_path):return urljoin(A.url_prefix,url_path)

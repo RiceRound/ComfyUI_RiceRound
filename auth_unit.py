@@ -6,7 +6,7 @@ import base64,json,os
 from pathlib import Path
 import time
 from urllib.parse import urljoin
-from.utils import get_local_app_path,get_machine_id
+from.utils import get_local_app_setting_path,get_machine_id
 from.rice_url_config import RiceUrlConfig
 from server import PromptServer
 import urllib.request,urllib.error,configparser
@@ -17,17 +17,11 @@ class AuthUnit:
 		return A._instance
 	def __init__(A):
 		B=True
-		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.temp_token='';A.long_token='';A.initialized=B
+		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_setting_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.temp_token='';A.initialized=B
 	def load_config(A):B=configparser.ConfigParser();B.read(A.config_path,encoding=_A);A.auto_login=B.get(_B,'auto_login',fallback=False)
 	def set_temp_token(A,temp_token):A.temp_token=temp_token
-	def set_user_long_token(A,long_token):
-		B=long_token
-		if not B:A.long_token=''
-		elif len(B)==64:A.long_token=B;A.clear_user_token()
 	def get_user_token(B):
-		A=''
-		if B.long_token:A=B.long_token
-		else:A=B.read_user_token()
+		A='';A=B.read_user_token()
 		if not A and B.temp_token:A=B.temp_token
 		if A and time.time()-B.last_check_time>120:
 			try:

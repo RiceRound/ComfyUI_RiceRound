@@ -39,9 +39,9 @@ def calculate_machine_id():
 		except Exception:pass
 	return str(uuid.getnode())
 def normalize_machine_id(machine_id):'\n    接受一个机器标识符，并返回经过 MD5 哈希处理的规范化标识符\n    ';A=_B;B=machine_id.strip();C=B.lower();D=C+A;E=hashlib.md5(D.encode(_A));return E.hexdigest()
-def get_local_app_path():A=Path.home();B=A/_B;return B
+def get_local_app_setting_path():A=Path.home();B=A/_B;return B
 def get_machine_id():
-	'\n    返回机器ID，为了兼容各个平台，各个语言，需要统一读写这个值\n    ';F='machine_id';B='Machine';D=get_local_app_path();C=D/'machine.ini'
+	'\n    返回机器ID，为了兼容各个平台，各个语言，需要统一读写这个值\n    ';F='machine_id';B='Machine';D=get_local_app_setting_path();C=D/'machine.ini'
 	try:D.mkdir(parents=True,exist_ok=True)
 	except Exception as E:print(f"Error creating directory '{D}': {E}");return''
 	A=configparser.ConfigParser()

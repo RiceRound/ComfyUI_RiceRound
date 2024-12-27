@@ -3,7 +3,7 @@ _B='class_type'
 _A='prompt'
 import json,os,random,tempfile,time
 from.auth_unit import AuthUnit
-from.utils import get_local_app_path
+from.utils import get_local_app_setting_path
 from.rice_prompt_info import RicePromptInfo
 class RiceRoundPromptHandler:
 	_instance=None;_initialized=False
