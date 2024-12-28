@@ -8,6 +8,10 @@
 
  2、[下载share_client.exe](docs/share_client.zip)文件，然后去www.riceround.online注册用户，在个人中心生成一个token，复制到client.toml文件中，另外特别注意要填写WorkingDirectory和PythonPath。也可以通过[百度网盘下载](https://pan.baidu.com/s/1Tq5zQXvLVgTCQXthC5Lt3A?pwd=5ndz)，提取码: 5ndz
 
+ ![image](docs/token.png)
+
+ 
+
  3、搭建工作流，注意用riceround里面的input节点，在尾部加上RiceRoundEncryptNode和RiceRoundOutputImageNode，然后点击运行，会在output文件夹生成一些加密工作流文件，其中workflow.json就是你拿去发布的加密工作流。
 
  ![image](docs/workflow.png)
