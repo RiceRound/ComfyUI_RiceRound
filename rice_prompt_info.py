@@ -67,9 +67,10 @@ class RiceEnvConfig:
 				C.append(D)
 		except Exception as E:print(f"Error processing add_cmd: {E}");return''
 		return' '.join(C)
-	def save_env_config(B):
-		C='ComfyUI';D=sys.executable;E=os.getcwd();F=' '.join(sys.argv[1:]);B.local_app_path.mkdir(parents=_A,exist_ok=_A);A=configparser.ConfigParser()
-		if B.config_path.exists():A.read(B.config_path,encoding=_C)
-		if not A.has_section(C):A.add_section(C)
-		G=B.filter_add_cmd(F).strip();A.set(C,'PythonPath',D);A.set(C,'WorkingDirectory',E);A.set(C,'AddCmd',G)
-		with open(B.config_path,'w',encoding=_C)as H:A.write(H)
+	def read_env(A):B=sys.executable;C=os.getcwd();D=' '.join(sys.argv[1:]);E=A.filter_add_cmd(D).strip();return{'PythonPath':B,'WorkingDirectory':C,'AddCmd':E}
+	def save_env_config(A):
+		C='ComfyUI';D=A.read_env();A.local_app_path.mkdir(parents=_A,exist_ok=_A);B=configparser.ConfigParser()
+		if A.config_path.exists():B.read(A.config_path,encoding=_C)
+		if not B.has_section(C):B.add_section(C)
+		for(E,F)in D.items():B.set(C,E,F)
+		with open(A.config_path,'w',encoding=_C)as G:B.write(G)
