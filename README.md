@@ -2,10 +2,13 @@
 One-click generation of encrypted nodes and online pages for ComfyUI commercialization tool.
 
 ## 简介 (Introduction)
-ComfyUI_RiceRound 是一个将 ComfyUI 工作流转换为加密节点和在线页面的工具。支持：
+ComfyUI_RiceRound 是一个将 ComfyUI 工作流转换为加密节点和在线页面的工具，平台本身免费使用。支持使用者（创作者）：
 - 按运行次数收费
-- 单独部署（计划中）
 - 长期授权（计划中）
+- 团队授权（计划中） 
+
+同时，在稳定版发布后，平台计划支持独立部署。
+
 
 ## 快速上手 (Quick Start)
 
