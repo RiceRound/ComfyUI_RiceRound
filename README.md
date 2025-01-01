@@ -1,27 +1,68 @@
 # ComfyUI_RiceRound
- One-click generation of encrypted nodes and online pages for ComfyUI commercialization tool.
+One-click generation of encrypted nodes and online pages for ComfyUI commercialization tool.
+
+## 简介 (Introduction)
+ComfyUI_RiceRound 是一个将 ComfyUI 工作流转换为加密节点和在线页面的工具。支持：
+- 按运行次数收费
+- 单独部署（计划中）
+- 长期授权（计划中）
+
+## 快速上手 (Quick Start)
+
+### 环境要求
+- 已安装 ComfyUI
+- Windows 系统（Linux 版本即将推出）
+
+### 安装步骤
+
+1. **下载并安装客户端**
+   - [直接下载](https://github.com/RiceRound/ComfyUI_RiceRound/releases/download/1.0.0.0/riceround_setup.zip)
+   - [百度网盘](https://pan.baidu.com/s/1GQ_JUWarN-zI_J89PUlMkA?pwd=b2r6) (提取码: b2r6)
+
+   > ⚠️ 安装过程需要手动重启 ComfyUI 服务，务必确保按提示操作。
+
+2. **创建加密工作流**
+   - 使用 RiceRound 提供的 input 节点
+   - 添加 RiceRoundEncryptNode 和 RiceRoundOutputImageNode
+   - 参考示例：[original.json](https://github.com/RiceRound/ComfyUI_RiceRound/blob/main/demo/original.json)
+
+   > ⚠️ 切记不能用RiceRound下面的output节点，只能用input、RiceRoundEncryptNode、RiceRoundOutputImageNode。
+
+   ![ComfyUI Menu](docs/comfyui_menu.png)
+   ![Workflow Example](docs/workflow.png)
+
+3. **部署工作流**
+   - 运行工作流，在 output 文件夹项目子文件夹下生成 rice.zip 和 workflow.json
+   - 访问 [RiceRound 官网](https://www.riceround.online)
+   - 在[个人中心](https://www.riceround.online/personal)上传 rice.zip
+
+   ![Generated Files](docs/files.png)
+   ![Upload Workflow](docs/upload_workflow.png)
+
+4. **验证部署**
+   - 使用生成的 workflow.json 测试运行
+   - 在网站查看已部署的工作流
+
+   ![Web Interface](docs/web.png)
+
+## 系统架构
+![System Architecture](docs/construct.png)
+
+系统通过任务调度平台连接：
+- P2P 主机
+- 云服务器
+- 创作者终端
+
+支持多平台访问：
+- 移动端
+- 桌面端
+- 浏览器端
+
+## 技术支持
+如需最新版本或技术支持，请扫描下方二维码添加微信：
+
+![WeChat QR Code](docs/wechat.jpg)
 
 
- ## 这个项目还没有完全完工，目前在内测阶段，先不做笼统的介绍：
 
- 1、安装节点，git拉取也行，zip下载后解压到custom_nodes文件夹也行，如果你已经安装过comfy-cli，可以直接在终端中输入comfy node registry-install comfyui_riceround，然后重启comfyui
 
- 2、[下载share_client.exe](docs/share_client.zip)文件，然后去www.riceround.online注册用户，在个人中心生成一个token，复制到client.toml文件中，另外特别注意要填写WorkingDirectory和PythonPath。也可以通过[百度网盘下载](https://pan.baidu.com/s/1Tq5zQXvLVgTCQXthC5Lt3A?pwd=5ndz)，提取码: 5ndz
-
- ![image](docs/token.png)
-
- 
-
- 3、搭建工作流，注意用riceround里面的input节点，在尾部加上RiceRoundEncryptNode和RiceRoundOutputImageNode，然后点击运行，会在output文件夹生成一些加密工作流文件，其中workflow.json就是你拿去发布的加密工作流。
-
- ![image](docs/workflow.png)
-
- 4、在www.riceround.online的我的工作流页面，点击创建工作流，上传rice.zip。
-
- 5、同时可以在页面和comfyui发布你的工作流了。
-
-  ![image](docs/web.png)
-
- ## 持续在更新，有时候教程、演示文件没有来得及更新，请联系我微信。
-
-![image](docs/wechat.jpg)
