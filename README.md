@@ -18,6 +18,11 @@ ComfyUI_RiceRound 是一个将 ComfyUI 工作流转换为加密节点和在线�
 
 ### 安装步骤
 
+简易视频可以参考这里
+https://youtu.be/RAQeFBZJ45Y
+
+[![Video Title](docs/comfyui_menu.png)](https://youtu.be/RAQeFBZJ45Y)
+
 1. **下载并安装客户端**
    - [直接下载](https://github.com/RiceRound/ComfyUI_RiceRound/releases/download/1.0.0.0/riceround_setup.zip)
    - [百度网盘](https://pan.baidu.com/s/1GQ_JUWarN-zI_J89PUlMkA?pwd=b2r6) (提取码: b2r6)
