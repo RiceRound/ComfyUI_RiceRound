@@ -1,77 +1,83 @@
 _D='user_token'
-_C=None
+_C='utf-8'
 _B='Auth'
-_A='utf-8'
-import base64,json,os
-from pathlib import Path
-import time
-from urllib.parse import urljoin
-from.utils import get_local_app_setting_path,get_machine_id
+_A=None
+import os,time,requests,configparser
+from.rice_def import RiceRoundErrorDef
+from.utils import get_local_app_setting_path,get_machine_id,generate_random_string
 from.rice_url_config import RiceUrlConfig
 from server import PromptServer
-import urllib.request,urllib.error,configparser
 class AuthUnit:
-	_instance=_C
+	_instance=_A
 	def __new__(A,*B,**C):
-		if A._instance is _C:A._instance=super(AuthUnit,A).__new__(A)
+		if A._instance is _A:A._instance=super(AuthUnit,A).__new__(A)
 		return A._instance
 	def __init__(A):
 		B=True
-		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();A.url_config=RiceUrlConfig();A.callback_path='/riceround/auth_callback';A.shift_key=sum(ord(A)for A in A.machine_id[:8])%20+1;C=get_local_app_setting_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.auto_login=False;A.load_config();A.last_check_time=0;A.temp_token='';A.initialized=B
-	def load_config(A):B=configparser.ConfigParser();B.read(A.config_path,encoding=_A);A.auto_login=B.get(_B,'auto_login',fallback=False)
-	def set_temp_token(A,temp_token):A.temp_token=temp_token
-	def get_user_token(B):
-		A='';A=B.read_user_token()
-		if not A and B.temp_token:A=B.temp_token
-		if A and time.time()-B.last_check_time>120:
+		if not hasattr(A,'initialized'):A.machine_id=get_machine_id();C=get_local_app_setting_path();C.mkdir(parents=B,exist_ok=B);A.config_path=C/'config.ini';A.last_check_time=0;A.initialized=B;A.user_id=0
+	def empty_token(A,need_clear=False):
+		A.token='';A.last_check_time=0
+		if need_clear:A.clear_user_token()
+	def get_user_token(A):
+		H='message';G='user_id';A.token=A.read_user_token()
+		if time.time()-A.last_check_time>120 and A.token and len(A.token)>50:
 			try:
-				D=urllib.request.Request(B.url_config.login_api_url,headers={'Content-Type':'application/json','Authorization':f"Bearer {A}"},method='GET')
-				with urllib.request.urlopen(D)as C:
-					if C.status!=200:A=_C;print(f"Auth failed, token: {A}")
-					else:E=json.loads(C.read().decode(_A));B.url_config.set_server_info(E);B.last_check_time=time.time();return A
-			except urllib.error.URLError:A=_C
-		if not A:B.login_in()
-		return A
-	def login_in(A):
-		PromptServer.instance.send_sync('rice_round_login',{'machine_id':A.machine_id,'url_prefix':A.url_config.web_url_prefix})
-		if A.auto_login:import webbrowser as C;B='';D=urljoin(A.url_config.comfyui_local_base_url,A.callback_path);E=base64.b64encode(D.encode(_A)).decode(_A);B='&callback_url='+E;F=A.url_config.auth_web_url+'?machine_id='+A.machine_id+B;C.open(F)
-	@staticmethod
-	def _encrypt(text,shift_key):
-		'Encrypt text using a simple character shift and base64 encoding.'
-		try:A=''.join(chr((ord(A)+shift_key)%65536)for A in text);return base64.b64encode(A.encode(_A)).decode(_A)
-		except Exception as B:print(f"Encryption error: {B}");return text
-	@staticmethod
-	def _decrypt(encoded_text,shift_key):
-		'Decrypt text that was encrypted with the _encrypt method.';A=encoded_text
-		try:B=base64.b64decode(A.encode(_A)).decode(_A);return''.join(chr((ord(A)-shift_key)%65536)for A in B)
-		except Exception as C:print(f"Decryption error: {C}");return A
+				I={'Content-Type':'application/json','Authorization':f"Bearer {A.token}"};B=requests.get(RiceUrlConfig().get_info_url,headers=I,timeout=10)
+				if B.status_code==200:
+					E=B.json()
+					if G in E:A.user_id=E[G]
+					else:A.user_id=0
+					A.last_check_time=time.time();return A.token,'',RiceRoundErrorDef.SUCCESS
+				else:
+					C='登录结果错误';D=RiceRoundErrorDef.UNKNOWN_ERROR
+					try:
+						F=B.json()
+						if H in F:C=F[H]
+					except ValueError:pass
+					if B.status_code==401:C='登录已过期，请重新登录';D=RiceRoundErrorDef.HTTP_UNAUTHORIZED
+					elif B.status_code==500:C='服务器内部错误，请稍后重试';D=RiceRoundErrorDef.HTTP_INTERNAL_ERROR
+					elif B.status_code==503:C='服务不可用，请稍后重试';D=RiceRoundErrorDef.HTTP_SERVICE_UNAVAILABLE
+					A.empty_token(B.status_code==401);return _A,C,D
+			except requests.exceptions.Timeout:A.empty_token();return _A,'请求超时，请检查网络连接',RiceRoundErrorDef.HTTP_TIMEOUT
+			except requests.exceptions.ConnectionError:A.empty_token();return _A,'网络连接失败，请检查网络',RiceRoundErrorDef.NETWORK_ERROR
+			except requests.exceptions.RequestException as J:A.empty_token();return _A,f"请求失败: {str(J)}",RiceRoundErrorDef.REQUEST_ERROR
+		if A.token and len(A.token)>50:return A.token,'',RiceRoundErrorDef.SUCCESS
+		return _A,'未读取到有效的token，请重新登录',RiceRoundErrorDef.NO_TOKEN_ERROR
+	def get_user_info(A):
+		D,C,B=A.get_user_token()
+		if B==RiceRoundErrorDef.SUCCESS and A.user_id:return B,A.user_id
+		else:return B,C
+	def login_dialog(A,title=''):A.client_key=generate_random_string(8);PromptServer.instance.send_sync('riceround_login_dialog',{'machine_id':A.machine_id,'client_key':A.client_key,'title':title})
 	def read_user_token(A):
-		'Retrieve and decrypt the user token.'
 		if not os.path.exists(A.config_path):return''
+		try:B=configparser.ConfigParser();B.read(A.config_path,encoding=_C);return B.get(_B,_D,fallback='')
+		except Exception as C:print(f"Error reading token: {C}");return''
+	def set_user_token(B,user_token,client_key):
+		C=client_key;A=user_token
+		if not C or B.client_key!=C:return
+		if not A:A='';print('user_token is empty')
+		B.save_user_token(A)
+	def save_user_token(B,user_token):
 		try:
-			B=configparser.ConfigParser();B.read(A.config_path,encoding=_A);C=B.get(_B,'test_user_token',fallback='')
-			if C:return C
-			D=B.get(_B,_D,fallback='')
-			if not D:return''
-			return AuthUnit._decrypt(D,A.shift_key)
-		except Exception as E:print(f"Error reading token: {E}");return''
-	def save_user_token(A,user_token):
-		'Encrypt and save the user token.';C=user_token
-		if not C:return
-		if C==A.temp_token:return
-		try:
-			B=configparser.ConfigParser()
-			if os.path.exists(A.config_path):B.read(A.config_path,encoding=_A)
-			if _B not in B:B.add_section(_B)
-			E=AuthUnit._encrypt(C,A.shift_key);B[_B][_D]=E
-			with open(A.config_path,'w',encoding=_A)as F:B.write(F)
-		except Exception as D:print(f"Error saving token: {D}");raise RuntimeError(f"Failed to save token: {D}")
+			A=configparser.ConfigParser()
+			try:
+				if os.path.exists(B.config_path):A.read(B.config_path,encoding=_C)
+			except Exception as D:print(f"Warning: Error reading existing config: {D}")
+			if _B not in A:A.add_section(_B)
+			A[_B][_D]=user_token
+			with open(B.config_path,'w',encoding=_C)as E:A.write(E)
+		except Exception as C:print(f"Error saving token: {C}");raise RuntimeError(f"Failed to save token: {C}")
+	def set_long_token(A,long_token):
+		B=long_token
+		if not B:return
+		A.save_user_token(B);A.client_key=''
 	def clear_user_token(B):
-		if not os.path.exists(B.config_path):return
-		try:
-			A=configparser.ConfigParser();A.read(B.config_path,encoding=_A)
-			if _B not in A:return
-			if _D not in A[_B]:return
-			A[_B][_D]=''
-			with open(B.config_path,'w',encoding=_A)as D:A.write(D)
-		except Exception as C:print(f"Error clearing token: {C}");raise RuntimeError(f"Failed to clear token: {C}")
+		PromptServer.instance.send_sync('riceround_clear_user_info',{'clear_key':'all'})
+		if os.path.exists(B.config_path):
+			try:
+				A=configparser.ConfigParser();A.read(B.config_path,encoding=_C)
+				if _B not in A:return
+				if _D not in A[_B]:return
+				A[_B][_D]=''
+				with open(B.config_path,'w',encoding=_C)as D:A.write(D)
+			except Exception as C:print(f"Error clearing token: {C}");raise RuntimeError(f"Failed to clear token: {C}")

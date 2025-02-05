@@ -1,3 +1,5 @@
 aiohttp
 pyzipper
 websockets
+portalocker
+tomlkit
