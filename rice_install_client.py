@@ -267,7 +267,12 @@ class RiceInstallClient:
                         RiceRoundErrorDef.ERROR_MACHINE_CODE_BASE, error_code
                     ),
                 )
-            secret_token = response.json()["key"]
+            response_data = response.json()
+            if response_data.get("code") != 0:
+                return None, "获取密钥失败: 响应码不为0", RiceRoundErrorDef.ERROR_SECRET_TOKEN
+            secret_token = response_data.get("data", {}).get("key")
+            if not secret_token:
+                return None, "获取密钥失败: 密钥为空", RiceRoundErrorDef.ERROR_SECRET_TOKEN
             return secret_token, "", 0
         except Exception as e:
             return None, "获取密钥失败" + str(e), RiceRoundErrorDef.ERROR_SECRET_TOKEN
