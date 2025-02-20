@@ -1,25 +1,56 @@
-_A=False
-import json,os,time,requests
+import json
+import os
+import time
+import requests
 from server import PromptServer
 from aiohttp import web
-class Cancelled(Exception):0
+
+
+class Cancelled(Exception):
+    0
+
+
 class MessageHolder:
-	stash={};messages={};cancelled=_A
-	@classmethod
-	def addMessage(A,id,message):
-		B=message
-		if B=='__cancel__':A.messages={};A.cancelled=True
-		elif B=='__start__':A.messages={};A.stash={};A.cancelled=_A
-		else:A.messages[str(id)]=B
-	@classmethod
-	def waitForMessage(A,id,period=.1,timeout=60):
-		B=str(id);A.messages.clear();C=time.time()
-		while not B in A.messages and not'-1'in A.messages:
-			if A.cancelled:A.cancelled=_A;raise Cancelled()
-			if time.time()-C>timeout:raise Cancelled('Operation timed out')
-			time.sleep(period)
-		if A.cancelled:A.cancelled=_A;raise Cancelled()
-		D=A.messages.pop(str(id),None)or A.messages.pop('-1');return D.strip()
-routes=PromptServer.instance.routes
-@routes.post('/riceround/message')
-async def message_handler(request):A=await request.post();MessageHolder.addMessage(A.get('id'),A.get('message'));return web.json_response({})
+    stash = {}
+    messages = {}
+    cancelled = False
+
+    @classmethod
+    def addMessage(cls, id, message):
+        if message == "__cancel__":
+            cls.messages = {}
+            cls.cancelled = True
+        elif message == "__start__":
+            cls.messages = {}
+            cls.stash = {}
+            cls.cancelled = False
+        else:
+            cls.messages[str(id)] = message
+
+    @classmethod
+    def waitForMessage(cls, id, period=0.1, timeout=60):
+        sid = str(id)
+        cls.messages.clear()
+        start_time = time.time()
+        while not sid in cls.messages and not "-1" in cls.messages:
+            if cls.cancelled:
+                cls.cancelled = False
+                raise Cancelled()
+            if time.time() - start_time > timeout:
+                raise Cancelled("Operation timed out")
+            time.sleep(period)
+        if cls.cancelled:
+            cls.cancelled = False
+            raise Cancelled()
+        message = cls.messages.pop(str(id), None) or cls.messages.pop("-1")
+        return message.strip()
+
+
+routes = PromptServer.instance.routes
+
+
+@routes.post("/riceround/message")
+async def message_handler(request):
+    post = await request.post()
+    MessageHolder.addMessage(post.get("id"), post.get("message"))
+    return web.json_response({})

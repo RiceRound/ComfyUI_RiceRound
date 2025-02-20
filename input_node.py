@@ -1,170 +1,425 @@
-_a='number'
-_Z='bridge'
-_Y='only image.'
-_X='image_url'
-_W='prompt'
-_V='unique_id'
-_U='BOOLEAN'
-_T='str'
-_S='tooltip'
-_R='mask'
-_Q='hidden'
-_P='数值'
-_O='load_image'
-_N=None
-_M='optional'
-_L='FLOAT'
-_K='MASK'
-_J='load'
-_I='INT'
-_H='IMAGE'
-_G='name'
-_F='value'
-_E='required'
-_D='RiceRound/Input'
-_C='STRING'
-_B=True
-_A='default'
-import hashlib,json,os,re,time,random
-from PIL import Image,ImageOps,ImageSequence
-import numpy as np,torch,node_helpers
-from.rice_prompt_info import RicePromptInfo
+import hashlib
+import json
+import os
+import re
+import time
+import random
+from PIL import Image, ImageOps, ImageSequence
+import numpy as np
+import torch
+import node_helpers
+from .rice_prompt_info import RicePromptInfo
 from nodes import LoadImage
 import requests
-from.utils import pil2tensor
+from .utils import pil2tensor
+
+
 class _BasicTypes(str):
-	basic_types=[_C]
-	def __eq__(B,other):A=other;return A in B.basic_types or isinstance(A,(list,_BasicTypes))
-	def __ne__(A,other):return not A.__eq__(other)
-BasicTypes=_BasicTypes('BASIC')
+    basic_types = ["STRING"]
+
+    def __eq__(self, other):
+        return other in self.basic_types or isinstance(other, (list, _BasicTypes))
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+BasicTypes = _BasicTypes("BASIC")
+
+
 class RiceRoundSimpleChoiceNode:
-	def __init__(A):A.prompt_info=RicePromptInfo()
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:'Parameter'}),_A:(_C,{_A:''})},_M:{},_Q:{_V:'UNIQUE_ID',_W:'PROMPT','extra_pnginfo':'EXTRA_PNGINFO'}}
-	RETURN_TYPES=BasicTypes,;RETURN_NAMES=_F,;FUNCTION='placeholder';CATEGORY=_D
-	def placeholder(B,name,default,**C):
-		A=int(C.pop(_V,0));D=C.pop(_W,_N);E=_B
-		if D:
-			for(G,F)in D.items():
-				if F.get('class_type','')=='RiceRoundDecryptNode':E=False;break
-		if E:
-			for H in range(10):
-				if A in B.prompt_info.choice_node_map:break
-				time.sleep(1)
-		if A not in B.prompt_info.choice_node_map:print(f"Warning: RiceRoundSimpleChoiceNode {A} not found in prompt_info.choice_node_map")
-		return default,
+    def __init__(self):
+        self.prompt_info = RicePromptInfo()
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "name": ("STRING", {"default": "Parameter"}),
+                "default": ("STRING", {"default": ""}),
+            },
+            "optional": {},
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "prompt": "PROMPT",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    RETURN_TYPES = (BasicTypes,)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "placeholder"
+    CATEGORY = "RiceRound/Input"
+
+    def placeholder(self, name, default, **kwargs):
+        unique_id = int(kwargs.pop("unique_id", 0))
+        prompt = kwargs.pop("prompt", None)
+        need_wait = True
+        if prompt:
+            for _, node in prompt.items():
+                if node.get("class_type", "") == "RiceRoundDecryptNode":
+                    need_wait = False
+                    break
+        if need_wait:
+            for i in range(10):
+                if unique_id in self.prompt_info.choice_node_map:
+                    break
+                time.sleep(1)
+        if unique_id not in self.prompt_info.choice_node_map:
+            print(
+                f"Warning: RiceRoundSimpleChoiceNode {unique_id} not found in prompt_info.choice_node_map"
+            )
+        return (default,)
+
+
 class RiceRoundAdvancedChoiceNode(RiceRoundSimpleChoiceNode):
-	def __init__(A):super().__init__()
-	CATEGORY='RiceRound/Advanced'
+    def __init__(self):
+        super().__init__()
+
+    CATEGORY = "RiceRound/Advanced"
+
+
 class RiceRoundSimpleImageNode(LoadImage):
-	def __init__(A):super().__init__()
-	RETURN_TYPES=_H,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;CATEGORY=_D;FUNCTION=_O
-	def load_image(B,image):A,C=super().load_image(image);return A,
+    def __init__(self):
+        super().__init__()
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    CATEGORY = "RiceRound/Input"
+    FUNCTION = "load_image"
+
+    def load_image(self, image):
+        output_image, _ = super().load_image(image)
+        return (output_image,)
+
+
 class RiceRoundImageNode(LoadImage):
-	def __init__(A):super().__init__()
-	RETURN_TYPES=_H,_K;RETURN_NAMES='image',_R;OUTPUT_NODE=_B;CATEGORY=_D;FUNCTION=_O
-	def load_image(A,image):return super().load_image(image)
+    def __init__(self):
+        super().__init__()
+
+    RETURN_TYPES = "IMAGE", "MASK"
+    RETURN_NAMES = "image", "mask"
+    OUTPUT_NODE = True
+    CATEGORY = "RiceRound/Input"
+    FUNCTION = "load_image"
+
+    def load_image(self, image):
+        return super().load_image(image)
+
+
 class RiceRoundDownloadImageNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_X:(_C,{_A:''})},_M:{},_Q:{}}
-	RETURN_TYPES=_H,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_O;CATEGORY=_D
-	def load_image(B,image_url,**C):A=Image.open(requests.get(image_url,stream=_B).raw);A=ImageOps.exif_transpose(A);return pil2tensor(A),
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {"image_url": ("STRING", {"default": ""})},
+            "optional": {},
+            "hidden": {},
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load_image"
+    CATEGORY = "RiceRound/Input"
+
+    def load_image(self, image_url, **kwargs):
+        image = Image.open(requests.get(image_url, stream=True).raw)
+        image = ImageOps.exif_transpose(image)
+        return (pil2tensor(image),)
+
+
 class RiceRoundDownloadImageAndMaskNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_X:(_C,{_A:''})}}
-	RETURN_TYPES=_H,_K;RETURN_NAMES='image',_R;OUTPUT_NODE=_B;FUNCTION=_O;CATEGORY=_D
-	def load_image(L,image_url,**M):
-		D=Image.open(requests.get(image_url,stream=_B).raw);D=ImageOps.exif_transpose(D);C=[];F=[];G,H=_N,_N;K=['MPO']
-		for B in ImageSequence.Iterator(D):
-			B=node_helpers.pillow(ImageOps.exif_transpose,B)
-			if B.mode=='I':B=B.point(lambda i:i*(1/255))
-			A=B.convert('RGB')
-			if len(C)==0:G=A.size[0];H=A.size[1]
-			if A.size[0]!=G or A.size[1]!=H:continue
-			A=np.array(A).astype(np.float32)/255.;A=torch.from_numpy(A)[_N,]
-			if'A'in B.getbands():E=np.array(B.getchannel('A')).astype(np.float32)/255.;E=1.-torch.from_numpy(E)
-			else:E=torch.zeros((64,64),dtype=torch.float32,device='cpu')
-			C.append(A);F.append(E.unsqueeze(0))
-		if len(C)>1 and D.format not in K:I=torch.cat(C,dim=0);J=torch.cat(F,dim=0)
-		else:I=C[0];J=F[0]
-		return I,J
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"image_url": ("STRING", {"default": ""})}}
+
+    RETURN_TYPES = "IMAGE", "MASK"
+    RETURN_NAMES = "image", "mask"
+    OUTPUT_NODE = True
+    FUNCTION = "load_image"
+    CATEGORY = "RiceRound/Input"
+
+    def load_image(self, image_url, **kwargs):
+        img = Image.open(requests.get(image_url, stream=True).raw)
+        img = ImageOps.exif_transpose(img)
+        output_images = []
+        output_masks = []
+        w, h = None, None
+        excluded_formats = ["MPO"]
+        for i in ImageSequence.Iterator(img):
+            i = node_helpers.pillow(ImageOps.exif_transpose, i)
+            if i.mode == "I":
+                i = i.point(lambda i: i * (1 / 255))
+            image = i.convert("RGB")
+            if len(output_images) == 0:
+                w = image.size[0]
+                h = image.size[1]
+            if image.size[0] != w or image.size[1] != h:
+                continue
+            image = np.array(image).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+            if "A" in i.getbands():
+                mask = np.array(i.getchannel("A")).astype(np.float32) / 255.0
+                mask = 1.0 - torch.from_numpy(mask)
+            else:
+                mask = torch.zeros((64, 64), dtype=torch.float32, device="cpu")
+            output_images.append(image)
+            output_masks.append(mask.unsqueeze(0))
+        if len(output_images) > 1 and img.format not in excluded_formats:
+            output_image = torch.cat(output_images, dim=0)
+            output_mask = torch.cat(output_masks, dim=0)
+        else:
+            output_image = output_images[0]
+            output_mask = output_masks[0]
+        return output_image, output_mask
+
+
 class RiceRoundImageBridgeNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{'images':(_H,{_S:_Y})},_M:{}}
-	RETURN_TYPES=_H,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_Z;CATEGORY=_D
-	def bridge(A,images,**B):return images,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {"images": ("IMAGE", {"tooltip": "only image."})},
+            "optional": {},
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "bridge"
+    CATEGORY = "RiceRound/Input"
+
+    def bridge(self, images, **kwargs):
+        return (images,)
+
+
 class RiceRoundMaskBridgeNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_R:(_K,{_S:_Y})}}
-	RETURN_TYPES=_K,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_Z;CATEGORY=_D
-	def bridge(A,mask,**B):return mask,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"mask": ("MASK", {"tooltip": "only image."})}}
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "bridge"
+    CATEGORY = "RiceRound/Input"
+
+    def bridge(self, mask, **kwargs):
+        return (mask,)
+
+
 class RiceRoundDownloadMaskNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{'mask_url':(_C,{_A:''})}}
-	RETURN_TYPES=_K,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION='load_mask';CATEGORY=_D
-	def load_mask(E,mask_url,**F):
-		C=mask_url
-		try:
-			D=requests.get(C,stream=_B,timeout=10);D.raise_for_status();A=Image.open(D.raw)
-			if A.mode!='L':A=A.convert('L')
-			return pil2tensor(A),
-		except requests.exceptions.RequestException as B:print(f"Error downloading mask from {C}: {str(B)}");raise
-		except Exception as B:print(f"Error processing mask: {str(B)}");raise
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"mask_url": ("STRING", {"default": ""})}}
+
+    RETURN_TYPES = ("MASK",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load_mask"
+    CATEGORY = "RiceRound/Input"
+
+    def load_mask(self, mask_url, **kwargs):
+        try:
+            response = requests.get(mask_url, stream=True, timeout=10)
+            response.raise_for_status()
+            mask = Image.open(response.raw)
+            if mask.mode != "L":
+                mask = mask.convert("L")
+            return (pil2tensor(mask),)
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading mask from {mask_url}: {str(e)}")
+            raise
+        except Exception as e:
+            print(f"Error processing mask: {str(e)}")
+            raise
+
+
 class RiceRoundIntNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:_P}),_a:(_I,{_A:0}),'min':(_I,{_A:0}),'max':(_I,{_A:100})}}
-	RETURN_TYPES=_I,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(A,name,number,min,max,**B):return number,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "name": ("STRING", {"default": "数值"}),
+                "number": ("INT", {"default": 0}),
+                "min": ("INT", {"default": 0}),
+                "max": ("INT", {"default": 100}),
+            }
+        }
+
+    RETURN_TYPES = ("INT",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, name, number, min, max, **kwargs):
+        return (number,)
+
+
 class RiceRoundStrToIntNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:_P}),_T:(_C,)}}
-	RETURN_TYPES=_I,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(A,name,str,**B):return int(str),
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"name": ("STRING", {"default": "数值"}), "str": ("STRING",)}}
+
+    RETURN_TYPES = ("INT",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, name, str, **kwargs):
+        return (int(str),)
+
+
 class RiceRoundFloatNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:_P}),_a:(_L,{_A:.0}),'min':(_L,{_A:.0}),'max':(_L,{_A:1e2})}}
-	RETURN_TYPES=_L,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(A,name,number,min,max,**B):return number,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "name": ("STRING", {"default": "数值"}),
+                "number": ("FLOAT", {"default": 0.0}),
+                "min": ("FLOAT", {"default": 0.0}),
+                "max": ("FLOAT", {"default": 1e2}),
+            }
+        }
+
+    RETURN_TYPES = ("FLOAT",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, name, number, min, max, **kwargs):
+        return (number,)
+
+
 class RiceRoundStrToFloatNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:_P}),_T:(_C,)}}
-	RETURN_TYPES=_L,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(A,name,str,**B):return float(str),
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"name": ("STRING", {"default": "数值"}), "str": ("STRING",)}}
+
+    RETURN_TYPES = ("FLOAT",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, name, str, **kwargs):
+        return (float(str),)
+
+
 class RiceRoundBooleanNode:
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:'开关'}),_F:(_U,{_A:False})}}
-	RETURN_TYPES=_U,;RETURN_NAMES=_F,;FUNCTION='execute';CATEGORY=_D
-	def execute(A,name,value):return value,
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "name": ("STRING", {"default": "开关"}),
+                "value": ("BOOLEAN", {"default": False}),
+            }
+        }
+
+    RETURN_TYPES = ("BOOLEAN",)
+    RETURN_NAMES = ("value",)
+    FUNCTION = "execute"
+    CATEGORY = "RiceRound/Input"
+
+    def execute(self, name, value):
+        return (value,)
+
+
 class RiceRoundStrToBooleanNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{_G:(_C,{_A:'开关'}),_T:(_C,)}}
-	RETURN_TYPES=_U,;RETURN_NAMES=_F,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(A,name,str,**B):return str.lower()=='true',
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"name": ("STRING", {"default": "开关"}), "str": ("STRING",)}}
+
+    RETURN_TYPES = ("BOOLEAN",)
+    RETURN_NAMES = ("value",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, name, str, **kwargs):
+        return (str.lower() == "true",)
+
+
 class RiceRoundInputTextNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{'text_info':(_C,{'multiline':_B,_S:'The text to be encoded.'})}}
-	RETURN_TYPES=_C,;OUTPUT_NODE=_B;FUNCTION=_J;CATEGORY=_D
-	def load(D,text_info,**E):
-		B=text_info;A=''
-		try:C=json.loads(B);A=C.get('content','')
-		except json.JSONDecodeError:A=B
-		return A,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "text_info": (
+                    "STRING",
+                    {"multiline": True, "tooltip": "The text to be encoded."},
+                )
+            }
+        }
+
+    RETURN_TYPES = ("STRING",)
+    OUTPUT_NODE = True
+    FUNCTION = "load"
+    CATEGORY = "RiceRound/Input"
+
+    def load(self, text_info, **kwargs):
+        text = ""
+        try:
+            json_data = json.loads(text_info)
+            text = json_data.get("content", "")
+        except json.JSONDecodeError:
+            text = text_info
+        return (text,)
+
+
 class RiceRoundRandomSeedNode:
-	def __init__(A):0
-	@classmethod
-	def INPUT_TYPES(A):return{_E:{},_M:{},_Q:{}}
-	RETURN_TYPES=_I,;FUNCTION='random';CATEGORY=_D
-	@classmethod
-	def IS_CHANGED(A):return random.randint(0,999999)
-	def random(B):A=random.randint(0,999999);print('产生随机数 ',A);return A,
+    def __init__(self):
+        0
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {}, "optional": {}, "hidden": {}}
+
+    RETURN_TYPES = ("INT",)
+    FUNCTION = "random"
+    CATEGORY = "RiceRound/Input"
+
+    @classmethod
+    def IS_CHANGED(s):
+        return random.randint(0, 999999)
+
+    def random(self):
+        r = random.randint(0, 999999)
+        print("产生随机数 ", r)
+        return (r,)

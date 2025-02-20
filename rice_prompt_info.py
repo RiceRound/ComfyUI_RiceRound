@@ -1,125 +1,259 @@
-_L='RiceRoundAdvancedChoiceNode'
-_K='node_type'
-_J='wait_time'
-_I='run_client'
-_H='auto_publish'
-_G='auto_overwrite'
-_F='python_class_name'
-_E='options_value'
-_D='utf-8'
-_C='Settings'
-_B=False
-_A=True
-import configparser,copy,hashlib,json,os
+import configparser
+import copy
+import hashlib
+import json
+import os
 from pathlib import Path
 import sys
-from.auth_unit import AuthUnit
-from.rice_url_config import download_template
+from .auth_unit import AuthUnit
+from .rice_url_config import download_template
 from server import PromptServer
 import re
-from.utils import get_local_app_setting_path
+from .utils import get_local_app_setting_path
+
+
 class RicePromptInfo:
-	_instance=None;_initialized=_B
-	def __new__(A):
-		if A._instance is None:A._instance=super(RicePromptInfo,A).__new__(A)
-		return A._instance
-	def __init__(A):
-		if RicePromptInfo._initialized:return
-		B=get_local_app_setting_path();B.mkdir(parents=_A,exist_ok=_A);A.config_path=B/'config.ini';A.choice_node_map={};A.auto_overwrite=A._read_config_bool(_C,_G,_B);A.auto_publish=A._read_config_bool(_C,_H,_A);A.run_client=A._read_config_bool(_C,_I,_A);A.wait_time=A._read_config_int(_C,_J,600);A.choice_classname_map={};A.load_choice_node_map();RicePromptInfo._initialized=_A
-	def _read_config_bool(D,section,key,default=_B):
-		'读取配置文件中的布尔值';B=default;A=section
-		try:C=configparser.ConfigParser();C.read(D.config_path,encoding=_D);return C.getboolean(A,key,fallback=B)
-		except Exception as E:print(f"Error reading config {A}.{key}: {E}");return B
-	def _read_config_int(D,section,key,default=0):
-		'读取配置文件中的整数';B=default;A=section
-		try:C=configparser.ConfigParser();C.read(D.config_path,encoding=_D);return C.getint(A,key,fallback=B)
-		except Exception as E:print(f"Error reading config {A}.{key}: {E}");return B
-	def _write_config_bool(C,section,key,value):
-		'写入布尔值到配置文件';B=section
-		try:
-			A=configparser.ConfigParser();A.read(C.config_path,encoding=_D)
-			if not A.has_section(B):A.add_section(B)
-			A.set(B,key,str(value).lower())
-			with open(C.config_path,'w',encoding=_D)as D:A.write(D)
-			return _A
-		except Exception as E:print(f"Error writing config {B}.{key}: {E}");return _B
-	def _write_config_int(C,section,key,value):
-		'写入整数到配置文件';B=section
-		try:
-			A=configparser.ConfigParser();A.read(C.config_path,encoding=_D)
-			if not A.has_section(B):A.add_section(B)
-			A.set(B,key,str(value))
-			with open(C.config_path,'w',encoding=_D)as D:A.write(D)
-			return _A
-		except Exception as E:print(f"Error writing config {B}.{key}: {E}");return _B
-	def set_auto_overwrite(A,auto_overwrite):B=auto_overwrite;A.auto_overwrite=B;A._write_config_bool(_C,_G,B)
-	def get_auto_overwrite(A):return A.auto_overwrite
-	def set_auto_publish(A,auto_publish):B=auto_publish;A.auto_publish=B;A._write_config_bool(_C,_H,B)
-	def get_auto_publish(A):return A.auto_publish
-	def set_run_client(A,run_client):B=run_client;A.run_client=B;A._write_config_bool(_C,_I,B)
-	def get_run_client(A):return A.run_client
-	def set_wait_time(A,wait_time):B=wait_time;A.wait_time=B;A._write_config_int(_C,_J,B)
-	def get_wait_time(A):return max(A.wait_time,10)
-	def clear(A):A.choice_node_map.clear()
-	def get_choice_server_folder(B):
-		A=get_local_app_setting_path()/'choice_node'
-		if not A.exists():A.mkdir(parents=_A)
-		return A
-	def load_choice_node_map(E):
-		"\n        Load and parse choice node options from JSON files in the choice_server_folder.\n        Each JSON file should contain an 'elements' array with choice node configurations.\n        ";K=E.get_choice_server_folder()
-		for A in K.glob('*.json'):
-			try:
-				with open(A,'r',encoding=_D)as L:
-					F=json.load(L)
-					if not isinstance(F,dict):print(f"Warning: Invalid JSON structure in file: {A}");continue
-					G=F.get('elements',[])
-					if not isinstance(G,list):print(f"Warning: 'elements' is not a list in file: {A}");continue
-					for C in G:
-						if not isinstance(C,dict):continue
-						if C.get('type')!='choice':continue
-						B=C.get('addition',{})
-						if not B or not isinstance(B,dict):continue
-						if B.get(_K)!=_L:continue
-						M=C.get('settings',{});H=M.get('options',[]);I=B.get(_F)
-						if I and isinstance(H,list):J=copy.deepcopy(B);J[_E]=H;E.choice_classname_map[I]=J
-			except json.JSONDecodeError as D:print(f"Error parsing JSON from file {A}: {str(D)}")
-			except Exception as D:print(f"Unexpected error processing file {A}: {str(D)}");continue
-	def install_choice_node(B,template_id):
-		A=template_id;C,F,G=AuthUnit().get_user_token();D=B.get_choice_server_folder()/f"{A}.json"
-		try:download_template(A,C,D)
-		except Exception as E:print(f"failed to download template, {E}");return _B
-		return _A
-	def get_choice_node_addition(B,node_id):
-		A=copy.deepcopy(B.choice_node_map.get(node_id,{}))
-		if A and isinstance(A,dict):A.pop(_E,None);return A
-		return{}
-	def get_choice_node_options(A,node_class_name):return A.choice_classname_map.get(node_class_name,{}).get(_E,[])
-	def get_choice_classname(A,node_id):return A.choice_node_map.get(node_id,{}).get(_F,'')
-	def get_choice_value(A,node_id):return A.choice_node_map.get(node_id,{}).get(_E,[])
-	def set_node_additional_info(B,node_additional_info):
-		E='template_id';C=node_additional_info
-		if C and isinstance(C,dict):
-			B.template_id=C.get(E,'');F=C.get('choice_node_map',{})
-			for(D,A)in F.items():
-				D=int(D);G=A.get('class_name','');A[E]=B.template_id;A['display_name']=G;H=A.get(_K,'')
-				if H==_L:I=f"RiceRoundAdvancedChoiceNode_{B.template_id}_{D}";A[_F]=I
-				B.choice_node_map[D]=A
+    _instance = None
+    _initialized = False
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(RicePromptInfo, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if RicePromptInfo._initialized:
+            return
+        local_app_path = get_local_app_setting_path()
+        local_app_path.mkdir(parents=True, exist_ok=True)
+        self.config_path = local_app_path / "config.ini"
+        self.choice_node_map = {}
+        self.auto_overwrite = self._read_config_bool(
+            "Settings", "auto_overwrite", False
+        )
+        self.auto_publish = self._read_config_bool("Settings", "auto_publish", True)
+        self.run_client = self._read_config_bool("Settings", "run_client", True)
+        self.wait_time = self._read_config_int("Settings", "wait_time", 600)
+        self.choice_classname_map = {}
+        self.load_choice_node_map()
+        RicePromptInfo._initialized = True
+
+    def _read_config_bool(self, section, key, default=False):
+        "读取配置文件中的布尔值"
+        try:
+            config = configparser.ConfigParser()
+            config.read(self.config_path, encoding="utf-8")
+            return config.getboolean(section, key, fallback=default)
+        except Exception as e:
+            print(f"Error reading config {section}.{key}: {e}")
+            return default
+
+    def _read_config_int(self, section, key, default=0):
+        "读取配置文件中的整数"
+        try:
+            config = configparser.ConfigParser()
+            config.read(self.config_path, encoding="utf-8")
+            return config.getint(section, key, fallback=default)
+        except Exception as e:
+            print(f"Error reading config {section}.{key}: {e}")
+            return default
+
+    def _write_config_bool(self, section, key, value):
+        "写入布尔值到配置文件"
+        try:
+            config = configparser.ConfigParser()
+            config.read(self.config_path, encoding="utf-8")
+            if not config.has_section(section):
+                config.add_section(section)
+            config.set(section, key, str(value).lower())
+            with open(self.config_path, "w", encoding="utf-8") as f:
+                config.write(f)
+            return True
+        except Exception as e:
+            print(f"Error writing config {section}.{key}: {e}")
+            return False
+
+    def _write_config_int(self, section, key, value):
+        "写入整数到配置文件"
+        try:
+            config = configparser.ConfigParser()
+            config.read(self.config_path, encoding="utf-8")
+            if not config.has_section(section):
+                config.add_section(section)
+            config.set(section, key, str(value))
+            with open(self.config_path, "w", encoding="utf-8") as f:
+                config.write(f)
+            return True
+        except Exception as e:
+            print(f"Error writing config {section}.{key}: {e}")
+            return False
+
+    def set_auto_overwrite(self, auto_overwrite):
+        self.auto_overwrite = auto_overwrite
+        self._write_config_bool("Settings", "auto_overwrite", auto_overwrite)
+
+    def get_auto_overwrite(self):
+        return self.auto_overwrite
+
+    def set_auto_publish(self, auto_publish):
+        self.auto_publish = auto_publish
+        self._write_config_bool("Settings", "auto_publish", auto_publish)
+
+    def get_auto_publish(self):
+        return self.auto_publish
+
+    def set_run_client(self, run_client):
+        self.run_client = run_client
+        self._write_config_bool("Settings", "run_client", run_client)
+
+    def get_run_client(self):
+        return self.run_client
+
+    def set_wait_time(self, wait_time):
+        self.wait_time = wait_time
+        self._write_config_int("Settings", "wait_time", wait_time)
+
+    def get_wait_time(self):
+        return max(self.wait_time, 10)
+
+    def clear(self):
+        self.choice_node_map.clear()
+
+    def get_choice_server_folder(self):
+        choice_server_folder = get_local_app_setting_path() / "choice_node"
+        if not choice_server_folder.exists():
+            choice_server_folder.mkdir(parents=True)
+        return choice_server_folder
+
+    def load_choice_node_map(self):
+        "\n        Load and parse choice node options from JSON files in the choice_server_folder.\n        Each JSON file should contain an 'elements' array with choice node configurations.\n"
+        choice_server_folder = self.get_choice_server_folder()
+        for file in choice_server_folder.glob("*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if not isinstance(data, dict):
+                        print(f"Warning: Invalid JSON structure in file: {file}")
+                        continue
+                    elements = data.get("elements", [])
+                    if not isinstance(elements, list):
+                        print(f"Warning: 'elements' is not a list in file: {file}")
+                        continue
+                    for element in elements:
+                        if not isinstance(element, dict):
+                            continue
+                        if element.get("type") != "choice":
+                            continue
+                        addition = element.get("addition", {})
+                        if not addition or not isinstance(addition, dict):
+                            continue
+                        if addition.get("node_type") != "RiceRoundAdvancedChoiceNode":
+                            continue
+                        settings = element.get("settings", {})
+                        options = settings.get("options", [])
+                        python_class_name = addition.get("python_class_name")
+                        if python_class_name and isinstance(options, list):
+                            info = copy.deepcopy(addition)
+                            info["options_value"] = options
+                            self.choice_classname_map[python_class_name] = info
+            except json.JSONDecodeError as e:
+                print(f"Error parsing JSON from file {file}: {str(e)}")
+            except Exception as e:
+                print(f"Unexpected error processing file {file}: {str(e)}")
+                continue
+
+    def install_choice_node(self, template_id):
+        user_token, error_msg, error_code = AuthUnit().get_user_token()
+        template_file_path = self.get_choice_server_folder() / f"{template_id}.json"
+        try:
+            download_template(template_id, user_token, template_file_path)
+        except Exception as e:
+            print(f"failed to download template, {e}")
+            return False
+        return True
+
+    def get_choice_node_addition(self, node_id):
+        info = copy.deepcopy(self.choice_node_map.get(node_id, {}))
+        if info and isinstance(info, dict):
+            info.pop("options_value", None)
+            return info
+        return {}
+
+    def get_choice_node_options(self, node_class_name):
+        return self.choice_classname_map.get(node_class_name, {}).get(
+            "options_value", []
+        )
+
+    def get_choice_classname(self, node_id):
+        return self.choice_node_map.get(node_id, {}).get("python_class_name", "")
+
+    def get_choice_value(self, node_id):
+        return self.choice_node_map.get(node_id, {}).get("options_value", [])
+
+    def set_node_additional_info(self, node_additional_info):
+        if node_additional_info and isinstance(node_additional_info, dict):
+            self.template_id = node_additional_info.get("template_id", "")
+            choice_node_map = node_additional_info.get("choice_node_map", {})
+            for node_id, info in choice_node_map.items():
+                node_id = int(node_id)
+                class_name = info.get("class_name", "")
+                info["template_id"] = self.template_id
+                info["display_name"] = class_name
+                node_type = info.get("node_type", "")
+                if node_type == "RiceRoundAdvancedChoiceNode":
+                    python_class_name = (
+                        f"RiceRoundAdvancedChoiceNode_{self.template_id}_{node_id}"
+                    )
+                    info["python_class_name"] = python_class_name
+                self.choice_node_map[node_id] = info
+
+
 class RiceEnvConfig:
-	def __init__(A):0
-	def filter_add_cmd(F,add_cmd):
-		B=add_cmd;C=[];A=_B
-		if not B:return''
-		try:
-			for D in B.split():
-				if A:A=_B;continue
-				if D in['--listen','--port']:A=_A;continue
-				C.append(D)
-		except Exception as E:print(f"Error processing add_cmd: {E}");return''
-		return' '.join(C)
-	def read_env(K):
-		J='ScriptName';I='AddCmd';H='WorkingDirectory';G='PythonPath';F='"\'';E='\\';C='/'
-		try:
-			D=sys.executable.replace(E,C);B=os.getcwd().replace(E,C);L=' '.join(sys.argv[1:]);M=K.filter_add_cmd(L).strip();A=sys.argv[0].replace(E,C)
-			if B in A:A=A.replace(B,'').lstrip(C)
-			D=D.strip(F);B=B.strip(F);A=A.strip(F);return{G:D,H:B,I:M,J:A}
-		except Exception as N:print(f"Error reading environment: {str(N)}");return{G:'',H:'',I:'',J:''}
+    def __init__(self):
+        0
+
+    def filter_add_cmd(self, add_cmd):
+        filtered_add_cmd = []
+        skip_next = False
+        if not add_cmd:
+            return ""
+        try:
+            for arg in add_cmd.split():
+                if skip_next:
+                    skip_next = False
+                    continue
+                if arg in ["--listen", "--port"]:
+                    skip_next = True
+                    continue
+                filtered_add_cmd.append(arg)
+        except Exception as e:
+            print(f"Error processing add_cmd: {e}")
+            return ""
+        return " ".join(filtered_add_cmd)
+
+    def read_env(self):
+        try:
+            python_path = sys.executable.replace("\\", "/")
+            working_directory = os.getcwd().replace("\\", "/")
+            cmd_args = " ".join(sys.argv[1:])
+            add_cmd = self.filter_add_cmd(cmd_args).strip()
+            script_name = sys.argv[0].replace("\\", "/")
+            if working_directory in script_name:
+                script_name = script_name.replace(working_directory, "").lstrip("/")
+            python_path = python_path.strip("\"'")
+            working_directory = working_directory.strip("\"'")
+            script_name = script_name.strip("\"'")
+            return {
+                "PythonPath": python_path,
+                "WorkingDirectory": working_directory,
+                "AddCmd": add_cmd,
+                "ScriptName": script_name,
+            }
+        except Exception as e:
+            print(f"Error reading environment: {str(e)}")
+            return {
+                "PythonPath": "",
+                "WorkingDirectory": "",
+                "AddCmd": "",
+                "ScriptName": "",
+            }
