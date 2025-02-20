@@ -16,7 +16,8 @@ import numpy as np,requests
 from urllib.parse import urljoin
 from.utils import get_local_app_setting_path
 DEFAULT_SUBDOMAIN='api'if os.getenv('RICE_ROUND_DEBUG')!='true'else'test'
-DEFAULT_URL_PREFIX=f"https://{DEFAULT_SUBDOMAIN}.riceround.online"
+_URL_PREFIX=os.getenv('RICE_ROUND_URL_PREFIX','')
+DEFAULT_URL_PREFIX=_URL_PREFIX if _URL_PREFIX and len(_URL_PREFIX)>10 else f"https://{DEFAULT_SUBDOMAIN}.riceround.online"
 DEFAULT_WS_PREFIX=f"wss://{DEFAULT_SUBDOMAIN}.riceround.online"
 class UploadType(IntEnum):TEMPLATE_PUBLISH_IMAGE=1;USER_UPLOAD_TASK_IMAGE=2;MACHINE_TASK_RESULT=1000
 class RiceUrlConfig:
@@ -76,7 +77,7 @@ def user_upload_image(image,user_token):
 	if A.status_code==200:return B
 	else:print(f"failed to upload image. Status code: {A.status_code}");raise ValueError(f"failed to upload image. Status code: {A.status_code}")
 def machine_upload_image(image,task_id):
-	F=RiceUrlConfig().machine_upload_sign_url;G=255.*image.cpu().numpy();H=Image.fromarray(np.clip(G,0,255).astype(np.uint8));E=BytesIO();H.save(E,format='PNG',quality=95,compress_level=1);I=E.getvalue();B='';C='';J={_F:UploadType.MACHINE_TASK_RESULT.value,_G:_B,'task_id':task_id};A=requests.get(F,params=J)
+	E=RiceUrlConfig().machine_upload_sign_url;print(f"upload_image_sign_url: {E}");G=255.*image.cpu().numpy();H=Image.fromarray(np.clip(G,0,255).astype(np.uint8));F=BytesIO();H.save(F,format='PNG',quality=95,compress_level=1);I=F.getvalue();B='';C='';J={_F:UploadType.MACHINE_TASK_RESULT.value,_G:_B,'task_id':task_id};A=requests.get(E,params=J)
 	if A.status_code==200:
 		D=A.json()
 		if D.get(_C)==0:B=D.get(_A,{}).get(_H,'');C=D.get(_A,{}).get(_D,'')
@@ -86,17 +87,17 @@ def machine_upload_image(image,task_id):
 	if A.status_code==200:return C
 	else:print(f"failed to upload image. Status code: {A.status_code}, Response: {A.text}");raise ValueError(f"failed to upload image. Status code: {A.status_code}")
 def download_template(template_id,user_token,save_path):
-	F='template_id';B=template_id;H=RiceUrlConfig().workflow_template_url;I={_E:f"Bearer {user_token}"};J={F:B};C=requests.get(H,headers=I,params=J)
+	G=user_token;F='template_id';B=template_id;I=RiceUrlConfig().workflow_template_url;J={_E:f"Bearer {G}"}if G else{};K={F:B};C=requests.get(I,headers=J,params=K)
 	if C.status_code!=200:raise ValueError(f"Failed to get template. Status code: {C.status_code}")
 	D=C.json()
 	if D.get(_C)!=0:raise ValueError(f"Failed to get template. Error: {D.get('msg')}")
-	G=D.get(_A,{}).get(_D)
-	if not G:raise ValueError('Template download URL is empty')
-	A=requests.get(G)
+	H=D.get(_A,{}).get(_D)
+	if not H:raise ValueError('Template download URL is empty')
+	A=requests.get(H)
 	if A.status_code!=200:raise ValueError(f"Failed to download template. Status code: {A.status_code}")
 	try:
 		E=A.json()
 		if E.get(F)!=B:raise ValueError(f"Template ID mismatch. Expected: {B}, Got: {E.get(F)}")
-		with open(save_path,'wb')as K:K.write(A.content)
+		with open(save_path,'wb')as L:L.write(A.content)
 		return E
 	except json.JSONDecodeError:raise ValueError('Failed to parse template JSON data')

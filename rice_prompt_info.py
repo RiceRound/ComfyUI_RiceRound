@@ -84,16 +84,10 @@ class RicePromptInfo:
 						if I and isinstance(H,list):J=copy.deepcopy(B);J[_E]=H;E.choice_classname_map[I]=J
 			except json.JSONDecodeError as D:print(f"Error parsing JSON from file {A}: {str(D)}")
 			except Exception as D:print(f"Unexpected error processing file {A}: {str(D)}");continue
-	def install_choice_node(D,template_id):
-		A=template_id;B,E,C=AuthUnit().get_user_token()
-		if not B:
-			print(f"riceround get user token failed, {E}")
-			if C==401 or C==-3:AuthUnit().login_dialog('安装节点需要先完成登录')
-			else:PromptServer.instance.send_sync('riceround_toast',{'content':'无法完成鉴权登录，请检查网络或完成登录步骤','type':'error'})
-			return _B
-		F=D.get_choice_server_folder()/f"{A}.json"
-		try:download_template(A,B,F)
-		except Exception as G:print(f"failed to download template, {G}");return _B
+	def install_choice_node(B,template_id):
+		A=template_id;C,F,G=AuthUnit().get_user_token();D=B.get_choice_server_folder()/f"{A}.json"
+		try:download_template(A,C,D)
+		except Exception as E:print(f"failed to download template, {E}");return _B
 		return _A
 	def get_choice_node_addition(B,node_id):
 		A=copy.deepcopy(B.choice_node_map.get(node_id,{}))

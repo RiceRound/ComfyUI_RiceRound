@@ -12,15 +12,15 @@ _p='hidden'
 _o='required'
 _n='RiceRoundInputTextNode'
 _m='RiceRoundDecryptNode'
-_l='main_link_id'
-_k='slot_index'
-_j='task_id'
-_i='PNG'
-_h='images'
-_g='template_id'
-_f='RiceRoundAdvancedChoiceNode'
-_e='RiceRoundSimpleChoiceNode'
-_d='title'
+_l='title'
+_k='main_link_id'
+_j='slot_index'
+_i='task_id'
+_h='PNG'
+_g='images'
+_f='template_id'
+_e='RiceRoundAdvancedChoiceNode'
+_d='RiceRoundSimpleChoiceNode'
 _c='_meta'
 _b=True
 _a='extra_pnginfo'
@@ -66,11 +66,11 @@ from server import PromptServer
 from.rice_url_config import RiceUrlConfig
 from.rice_prompt_info import RicePromptInfo
 output_project_folder=folder_paths.output_directory
-INPUT_NODE_TYPES=[_e,_f,_O,_P,_L,_Q,_n,_R,_S,_T,_U,_V,_W,_X,_Y]
+INPUT_NODE_TYPES=[_d,_e,_O,_P,_L,_Q,_n,_R,_S,_T,_U,_V,_W,_X,_Y]
 class RiceRoundEncryptNode:
 	def __init__(A):A.template_id=uuid.uuid4().hex;A.output_dir=folder_paths.get_temp_directory();A.type='temp';A.prefix_append='_temp_'+''.join(random.choice('abcdefghijklmnopqrstupvxyz')for A in range(5));A.compress_level=4
 	@classmethod
-	def INPUT_TYPES(A):return{_o:{_q:(_E,{_I:'my_project'}),_g:(_E,{_I:uuid.uuid4().hex}),_h:(_J,)},_p:{_M:_r,_Z:_s,_a:_t}}
+	def INPUT_TYPES(A):return{_o:{_q:(_E,{_I:'my_project'}),_f:(_E,{_I:uuid.uuid4().hex}),_g:(_J,)},_p:{_M:_r,_Z:_s,_a:_t}}
 	@classmethod
 	def IS_CHANGED(A,**B):return float('NaN')
 	RETURN_TYPES=();OUTPUT_NODE=_b;FUNCTION='encrypt';CATEGORY='RiceRound'
@@ -79,7 +79,7 @@ class RiceRoundEncryptNode:
 		for(I,a)in enumerate(A):
 			b=255.*a.cpu().numpy();J=Image.fromarray(np.clip(b,0,255).astype(np.uint8))
 			if I==0:H=os.path.join(F,'preview.png');J.save(H)
-			Z.update_absolute(I,A.shape[0],(_i,J,_B));c=X.replace('%batch_num%',str(I));N=f"{c}_{L:05}_.png";J.save(os.path.join(W,N),compress_level=B.compress_level);M.append({'filename':N,'subfolder':Y,_A:B.type});L+=1
+			Z.update_absolute(I,A.shape[0],(_h,J,_B));c=X.replace('%batch_num%',str(I));N=f"{c}_{L:05}_.png";J.save(os.path.join(W,N),compress_level=B.compress_level);M.append({'filename':N,'subfolder':Y,_A:B.type});L+=1
 		d=RicePromptInfo().get_auto_publish()
 		if d:
 			e=Publish(F);O,P,C=AuthUnit().get_user_token()
@@ -92,11 +92,11 @@ class RiceRoundEncryptNode:
 		if RicePromptInfo().get_run_client():
 			C,P=RiceInstallClient().run_client()
 			if C!=RiceRoundErrorDef.SUCCESS:PromptServer.instance.send_sync(Q,{R:'加密节点发布完成，但无法启动client，建议官网重新安装',_A:S})
-		return{'ui':{_h:M}}
+		return{'ui':{_g:M}}
 class RiceRoundOutputImageNode:
 	def __init__(A):A.url_config=RiceUrlConfig()
 	@classmethod
-	def INPUT_TYPES(A):return{_o:{_h:(_J,),_j:(_E,{_I:''})},'optional':{_g:(_E,{_I:''})},_p:{_M:_r,_Z:_s,_a:_t}}
+	def INPUT_TYPES(A):return{_o:{_g:(_J,),_i:(_E,{_I:''})},'optional':{_f:(_E,{_I:''})},_p:{_M:_r,_Z:_s,_a:_t}}
 	RETURN_TYPES=();OUTPUT_NODE=_b;FUNCTION='load';CATEGORY='__hidden__'
 	def load(N,images,task_id,template_id,**B):
 		I='image_type';C=images;A=task_id;D=B.pop(_M,_B);J=B.pop(_Z,_B);O=B.pop(_a,_B);E=PromptServer.instance.client_id;F=''
@@ -107,12 +107,12 @@ class RiceRoundOutputImageNode:
 		else:
 			print(f"RiceRoundOutputImageNode task_id: {A}")
 			if C.shape[0]>5:raise ValueError('Error: Cannot upload more than 5 images.')
-			G=[];time.sleep(60)
+			G=[]
 			for K in C:
 				H=machine_upload_image(K,A)
 				if not H:raise ValueError('Error: Failed to upload image.')
 				G.append(H)
-			L={I:_i,'image_results':G};M={_j:A,_M:D,'client_id':E,'prompt_id':F,'timestamp':int(time.time()*1000),I:_i,'result_data':L};PromptServer.instance.send_sync('rice_round_done',M,sid=E)
+			L={I:_h,'image_results':G};M={_i:A,_M:D,'client_id':E,'prompt_id':F,'timestamp':int(time.time()*1000),I:_h,'result_data':L};PromptServer.instance.send_sync('rice_round_done',M,sid=E)
 		return{}
 class Encrypt:
 	def __init__(A,workflow,prompt,project_name,template_id):
@@ -133,7 +133,7 @@ class Encrypt:
 			for D in G:
 				E=D.get(_C,[])
 				if not E:continue
-				for B in E:B=int(B);A.link_owner_map[B][_C]=copy.deepcopy(E);A.link_owner_map[B][_k]=D.get(_k,0);A.link_owner_map[B][_u]=int(F[_D]);A.link_owner_map[B][_A]=D.get(_A,'')
+				for B in E:B=int(B);A.link_owner_map[B][_C]=copy.deepcopy(E);A.link_owner_map[B][_j]=D.get(_j,0);A.link_owner_map[B][_u]=int(F[_D]);A.link_owner_map[B][_A]=D.get(_A,'')
 		A.last_node_id=int(C[_v]);A.last_link_id=int(C['last_link_id'])
 	def load_prompt(A):B=copy.deepcopy(A.original_prompt);A.node_prompt_map={int(A):B for(A,B)in B.items()}
 	def analyze_input_from_workflow(A):
@@ -144,7 +144,7 @@ class Encrypt:
 				if not C:continue
 				D=C[0].get(_C,[])
 				if not D:continue
-				F=int(D[0]);A.input_node_map[id][_l]=F;A.input_node_map[id][_w]=C[0].get(_A,_E)
+				F=int(D[0]);A.input_node_map[id][_k]=F;A.input_node_map[id][_w]=C[0].get(_A,_E)
 		A.input_node_map={A:B for(A,B)in sorted(A.input_node_map.items(),key=lambda x:x[0])}
 	def assemble_new_workflow(A):C=list(A.input_node_map.keys());B=copy.deepcopy(A.original_workflow);A.related_node_ids=A.find_workflow_related_nodes(B[_C],C);B[_F]=[B for B in B[_F]if int(B[_D])in A.related_node_ids];A.invalid_new_workflow(B);D=A.add_decrypt_node(B);A.remove_redundant_links(B);A.remove_unrelated_nodes(B,A.related_node_ids,D);A.replace_choice_template(B);A.replace_workflow_node(B);A.output_file(B,f"{A.template_id}_workflow")
 	def output_template_json_file(F):
@@ -156,20 +156,20 @@ class Encrypt:
 		Q=RicePromptInfo();R=[]
 		for(G,W)in F.input_node_map.items():
 			X=W[_x];B=F.workflow_nodes_dict[G][_A];D=F.node_prompt_map[G].get(_H,{});H=str(D.get(_K,''))
-			if not H:H=F.node_prompt_map[G].get(_c,{}).get(_d,'')
+			if not H:H=F.node_prompt_map[G].get(_c,{}).get(_l,'')
 			A={_D:str(X),_A:'',C:'输入组件','node_id':str(G),E:{}}
 			if B in[_O,_L,_Q]:A[_A]='image_upload';A[C]='请上传图片';A[E]={M:P,N:500000,O:S}
 			elif B==_P:A[_A]='mask_image_upload';A[C]='请上传图片并编辑蒙版';A[E]={M:P,N:500000,O:S,'mask':_b}
 			elif B in[_R,_S]:A[_A]='mask_upload';A[C]='请上传蒙版';A[E]={M:P,N:50000,O:'请上传不超过50KB的图片'}
 			elif B==_n:A[_A]='text';A[C]='提示词';A[E]={'placeholder':'请描述图片内容','multiline':_b}
-			elif B==_e or B==_f:A[_A]='choice';A[C]='模型选择';A[E]={'options':Q.get_choice_value(G),_I:D.get(_I,'')};A['addition']=Q.get_choice_node_addition(G)
+			elif B==_d or B==_e:A[_A]='choice';A[C]='模型选择';A[E]={'options':Q.get_choice_value(G),_I:D.get(_I,'')};A['addition']=Q.get_choice_node_addition(G)
 			elif B==_T or B==_V:A[_A]='number_int';A[C]='数值';A[E]={I:D.get(I,0),J:D.get(J,1000),K:D.get(K,0)}
 			elif B==_U or B==_W:A[_A]='number_float';A[C]='数值';A[E]={I:D.get(I,.0),J:D.get(J,1e3),K:D.get(K,.0)}
 			elif B==_X or B==_Y:A[_A]='switch';A[C]='开关';A[E]={_I:D.get('value',False)}
 			else:raise ValueError(f"Error: The node {G} is not a valid RiceRound node.")
 			if H and H not in L:A[C]=H
 			R.append(A)
-		Y={_g:F.template_id,_d:F.project_name,'elements':R};F.output_file(Y,f"{F.template_id}_template")
+		Y={_f:F.template_id,'elements':R};F.output_file(Y,f"{F.template_id}_template")
 	def assemble_new_prompt(A):'\n        组装新的prompt配置。主要完成:\n        1. 移除不需要的节点\n        2. 转换特定节点的类型和输入\n        3. 保存处理后的prompt配置\n        ';B=A._create_filtered_prompt();A._replace_encrypt_node(B);A._transform_node_types(B);A.output_file(B,f"{A.template_id}_job")
 	def _create_filtered_prompt(B):
 		'\n        创建经过过滤的prompt副本，移除不需要的节点\n        ';A=copy.deepcopy(B.original_prompt);C=B._get_exclude_node_ids(A)
@@ -180,8 +180,8 @@ class Encrypt:
 		for(E,A)in new_prompt.items():
 			B=A.get(_N,'');print(f"class_type: {B}")
 			if B=='RiceRoundEncryptNode':
-				A[_N]=C;A[_H][_j]='';A[_H].pop(_q,_B)
-				if _c in A and _d in A[_c]:A[_c][_d]=C
+				A[_N]=C;A[_H][_i]='';A[_H].pop(_q,_B)
+				if _c in A and _l in A[_c]:A[_c][_l]=C
 	def save_rice_zip(A):
 		import pyzipper as B
 		try:
@@ -208,9 +208,9 @@ class Encrypt:
 				J=F[G];C[_N]=J[A];C[_H]=J[B].copy()
 				if I:C[_H][_K]=I
 	def add_decrypt_node(A,workflow):
-		K='label';C=workflow;G=set();A.last_node_id+=1;H={_D:A.last_node_id,_A:_m,'pos':[420,0],'size':[500,150],'flags':{},'mode':0,'order':20,_H:[],_G:[{_K:_J,_A:_J,_C:[],K:_J,_k:0}],_y:{_z:_m},'widgets_values':[str(A.template_id),735127949069071,'randomize']}
+		K='label';C=workflow;G=set();A.last_node_id+=1;H={_D:A.last_node_id,_A:_m,'pos':[420,0],'size':[500,150],'flags':{},'mode':0,'order':20,_H:[],_G:[{_K:_J,_A:_J,_C:[],K:_J,_j:0}],_y:{_z:_m},'widgets_values':[str(A.template_id),735127949069071,'randomize']}
 		for(B,(D,E))in enumerate(A.input_node_map.items()):
-			I=E[_l];F=E[_w];E[_x]=B;J={_K:f"input_anything{B if B>0 else''} ({D})",_A:'*','link':I,K:f"input_anything{B if B>0 else''} ({D})"}
+			I=E[_k];F=E[_w];E[_x]=B;J={_K:f"input_anything{B if B>0 else''} ({D})",_A:'*','link':I,K:f"input_anything{B if B>0 else''} ({D})"}
 			if B==0:J['shape']=7
 			H[_H].append(J)
 			if F not in[_J,_E]:F=_E
@@ -224,7 +224,7 @@ class Encrypt:
 		for E in A[_F]:
 			F=int(E[_D])
 			if F in C.input_node_map:
-				G=C.input_node_map[F][_l];B=E.get(_G,[])
+				G=C.input_node_map[F][_k];B=E.get(_G,[])
 				if not B:continue
 				for J in B:
 					H=J.get(_C,[])
@@ -237,13 +237,13 @@ class Encrypt:
 		D='extra';C=workflow;E=RicePromptInfo()
 		for A in C[_F]:
 			B=int(A[_D])
-			if A.get(_A,'')==_f:
+			if A.get(_A,'')==_e:
 				F=E.get_choice_classname(B)
 				if F:A[_A]=F
 				else:print(f"Warning: The node {B} is not a valid RiceRound Choice node.")
 		G={}
 		for(B,A)in H.input_node_map.items():
-			if A.get(_A,'')==_e:I=E.get_choice_value(B);G[B]=I
+			if A.get(_A,'')==_d:I=E.get_choice_value(B);G[B]=I
 		if D not in C:C[D]={}
 		C[D]['choice_node_map']=G
 	def replace_workflow_node(L,workflow):

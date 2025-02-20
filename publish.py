@@ -38,8 +38,8 @@ class Publish:
 		except Exception as G:return-1,str(G)
 	def _upload_workflow(I,user_token,template_id,project_name,preview_image_url,publish_file):
 		try:
-			C={_B:f"Bearer {user_token}"};D={'templateId':template_id,'title':project_name,'mainImageUrl':preview_image_url or''}
-			with open(publish_file,'rb')as E:F={'file':('workflow',E,'application/octet-stream')};G={'data':json.dumps(D),'source':'comfyui'};A=requests.put(RiceUrlConfig().publisher_workflow_url,headers=C,files=F,data=G)
+			C={_B:f"Bearer {user_token}"};D={'template_id':template_id,'title':project_name,'main_image_url':preview_image_url or''}
+			with open(publish_file,'rb')as E:F={'workflow_file':('workflow',E,'application/octet-stream')};G={'data':json.dumps(D),'source':'comfyui'};A=requests.put(RiceUrlConfig().publisher_workflow_url,headers=C,files=F,data=G)
 			if A.status_code==200:
 				B=A.json()
 				if B.get('code')==0:return True,'Success'

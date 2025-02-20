@@ -1,17 +1,17 @@
 _P='Message'
 _O='CommandType'
-_N='resultData'
-_M='templateName'
-_L='templateDescription'
-_K='templateId'
-_J='updateTime'
-_I='createTime'
+_N='result_data'
+_M='template_name'
+_L='template_description'
+_K='template_id'
+_J='update_time'
+_I='create_time'
 _H='prompt'
 _G='thumbnail'
-_F='progressText'
+_F='progress_text'
 _E='progress'
 _D='state'
-_C='taskUuid'
+_C='task_uuid'
 _B=False
 _A=None
 import datetime
@@ -97,7 +97,7 @@ class TaskWebSocket:
 			await asyncio.sleep(5)
 			try:model_management.throw_exception_if_processing_interrupted()
 			except Exception as B:
-				print(f"Processing interrupted during progress monitoring: {B}");A.stop_event.set();C=PackageMessage(CommandType=COMMAND_TYPE_USER_CLIENT_WEB_COMMAND_CANCEL_TASK,Message={'task_uuid':A.task_info.task_uuid})
+				print(f"Processing interrupted during progress monitoring: {B}");A.stop_event.set();C=PackageMessage(CommandType=COMMAND_TYPE_USER_CLIENT_WEB_COMMAND_CANCEL_TASK,Message={_C:A.task_info.task_uuid})
 				try:await A.send_message(C)
 				except Exception as D:print(f"Failed to send cancel notification: {D}")
 				break

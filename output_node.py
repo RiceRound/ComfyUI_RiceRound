@@ -35,7 +35,7 @@ import requests,numpy as np,folder_paths
 from nodes import LoadImage
 from comfy.utils import ProgressBar
 from server import PromptServer
-from.rice_def import RiceRoundErrorDef
+from.rice_def import RiceRoundErrorDef,RiceTaskErrorDef
 from.rice_url_config import RiceUrlConfig,user_upload_image,user_upload_imagefile
 from.utils import get_machine_id,pil2tensor
 from.auth_unit import AuthUnit
@@ -85,16 +85,20 @@ class RiceRoundDecryptNode:
 		L=[]
 		for O in K:G=Image.open(requests.get(O,stream=_B).raw);G=ImageOps.exif_transpose(G);L.append(pil2tensor(G))
 		P=torch.cat(L,dim=0);A.pbar=_H;return P,
-	def create_task(E,input_data,template_id,user_token):
-		'\n        Create a task and return the task UUID.\n        \n        Args:\n            task_url (str): The URL to send the task request to\n            request_data (dict): The data to send in the request\n            headers (dict): The headers to send with the request\n            \n        Returns:\n            str: The task UUID if successful\n            \n        Raises:\n            ValueError: If the request fails or response is invalid\n        ';D='data';F=E.url_config.prompt_task_url;G={_Y:f"Bearer {user_token}",'Content-Type':'application/json'};H={'taskData':json.dumps(input_data),'workData':json.dumps({'template_id':template_id})};A=requests.post(F,json=H,headers=G)
-		if A.status_code==200:
-			B=A.json()
-			if B.get('code')==0 and D in B:
-				C=TaskInfo(B.get(D,{}))
-				if C.task_uuid:return C
+	def create_task(J,input_data,template_id,user_token):
+		'\n        Create a task and return the task UUID.\n        \n        Args:\n            task_url (str): The URL to send the task request to\n            request_data (dict): The data to send in the request\n            headers (dict): The headers to send with the request\n            \n        Returns:\n            str: The task UUID if successful\n            \n        Raises:\n            ValueError: If the request fails or response is invalid\n        ';I='Unknown error';H='message';G='data';F='code';E='template_id';C=template_id;K=J.url_config.prompt_task_url;L={_Y:f"Bearer {user_token}",'Content-Type':'application/json'};M={'taskData':json.dumps(input_data),'workData':json.dumps({E:C})};B=requests.post(K,json=M,headers=L)
+		if B.status_code==200:
+			A=B.json()
+			if A.get(F)==0 and G in A:
+				D=TaskInfo(A.get(G,{}))
+				if D.task_uuid:return D
 				else:raise ValueError('No task UUID in response')
-			else:raise ValueError(f"API error: {B.get('message','Unknown error')}")
-		else:raise ValueError(f"HTTP error {A.status_code}: {A.text}")
+			else:raise ValueError(f"API error: {A.get(H,I)}")
+		elif B.status_code==RiceRoundErrorDef.HTTP_INTERNAL_ERROR:
+			A=B.json()
+			if A.get(F)==RiceTaskErrorDef.ERROR_INSUFFICIENT_PERMISSION_INSUFFICIENT_BALANCE:PromptServer.instance.send_sync('riceround_show_workflow_payment_dialog',{E:C,'title':'余额不足，请充值'});raise ValueError(f"余额不足，运行失败，请完成支付后重试！")
+			else:raise ValueError(f"API error: {A.get(H,I)}")
+		else:raise ValueError(f"HTTP error {B.status_code}: {B.text}")
 class RiceRoundBaseChoiceNode:
 	def __init__(A):0
 	@classmethod

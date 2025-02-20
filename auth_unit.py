@@ -19,20 +19,20 @@ class AuthUnit:
 		A.token='';A.last_check_time=0
 		if need_clear:A.clear_user_token()
 	def get_user_token(A):
-		H='message';G='user_id';A.token=A.read_user_token()
+		F='message';A.token=A.read_user_token()
 		if time.time()-A.last_check_time>120 and A.token and len(A.token)>50:
 			try:
-				I={'Content-Type':'application/json','Authorization':f"Bearer {A.token}"};B=requests.get(RiceUrlConfig().get_info_url,headers=I,timeout=10)
+				G={'Content-Type':'application/json','Authorization':f"Bearer {A.token}"};B=requests.get(RiceUrlConfig().get_info_url,headers=G,timeout=10)
 				if B.status_code==200:
-					E=B.json()
-					if G in E:A.user_id=E[G]
-					else:A.user_id=0
+					H=B.json()
+					try:A.user_id=int(H.get('user_id',0)or 0)
+					except(ValueError,TypeError):A.user_id=0
 					A.last_check_time=time.time();return A.token,'',RiceRoundErrorDef.SUCCESS
 				else:
 					C='登录结果错误';D=RiceRoundErrorDef.UNKNOWN_ERROR
 					try:
-						F=B.json()
-						if H in F:C=F[H]
+						E=B.json()
+						if F in E:C=E[F]
 					except ValueError:pass
 					if B.status_code==401:C='登录已过期，请重新登录';D=RiceRoundErrorDef.HTTP_UNAUTHORIZED
 					elif B.status_code==500:C='服务器内部错误，请稍后重试';D=RiceRoundErrorDef.HTTP_INTERNAL_ERROR
@@ -40,7 +40,7 @@ class AuthUnit:
 					A.empty_token(B.status_code==401);return _A,C,D
 			except requests.exceptions.Timeout:A.empty_token();return _A,'请求超时，请检查网络连接',RiceRoundErrorDef.HTTP_TIMEOUT
 			except requests.exceptions.ConnectionError:A.empty_token();return _A,'网络连接失败，请检查网络',RiceRoundErrorDef.NETWORK_ERROR
-			except requests.exceptions.RequestException as J:A.empty_token();return _A,f"请求失败: {str(J)}",RiceRoundErrorDef.REQUEST_ERROR
+			except requests.exceptions.RequestException as I:A.empty_token();return _A,f"请求失败: {str(I)}",RiceRoundErrorDef.REQUEST_ERROR
 		if A.token and len(A.token)>50:return A.token,'',RiceRoundErrorDef.SUCCESS
 		return _A,'未读取到有效的token，请重新登录',RiceRoundErrorDef.NO_TOKEN_ERROR
 	def get_user_info(A):

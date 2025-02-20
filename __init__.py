@@ -113,11 +113,13 @@ async def install_choice_node(request):
 		return aiohttp.web.json_response({_A:_B,A:'Installation successful, server will restart in 3 seconds'},status=200)
 	return aiohttp.web.json_response({_A:B,A:'Installation failed'},status=400)
 is_on_riceround=False
+client_random=None
 if os.getenv('RICE_ROUND_SERVER')=='true':is_on_riceround=True
+if is_on_riceround:client_random=os.getenv('RICE_ROUND_CLIENT_RANDOM')
 @web.middleware
 async def check_login_status(request,handler):
 	if is_on_riceround:
-		if request.headers.get('owner')=='share_client':return await handler(request)
+		if request.headers.get('owner')=='share_client'and request.headers.get('client_random')==client_random:return await handler(request)
 		return web.json_response({_C:'Access denied'},status=403)
 	return await handler(request)
 if not is_on_riceround:
