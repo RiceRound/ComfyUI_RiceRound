@@ -1,11 +1,11 @@
-import { api as e } from "../../../scripts/api.js";
+import { api } from "../../../scripts/api.js";
 
-import { ComfyApp as t, app as o } from "../../../scripts/app.js";
+import { ComfyApp, app } from "../../../scripts/app.js";
 
-const n = document.createElement("style");
+const style = document.createElement("style");
 
-n.textContent = "\n    .riceround-swal-top-container {\n        z-index: 99999 !important;\n    }\n", 
-document.head.appendChild(n);
+style.textContent = "\n    .riceround-swal-top-container {\n        z-index: 99999 !important;\n    }\n", 
+document.head.appendChild(style);
 
 export async function loadResource(e, t = "") {
     if (!document.querySelector(`script[src="${e}"]`)) {
@@ -30,17 +30,17 @@ export async function loadResource(e, t = "") {
     }
 }
 
-let i = !1;
+let toastHasLoaded = !1;
 
-async function s() {
-    if (!i) {
+async function loadToast() {
+    if (!toastHasLoaded) {
         const e = "https://cdn.jsdelivr.net/npm/toastify-js", t = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
-        await loadResource(e, t), i = !0;
+        await loadResource(e, t), toastHasLoaded = !0;
     }
 }
 
 export async function showToast(e, t = "info", o = 3e3) {
-    await s(), "info" == t ? Toastify({
+    await loadToast(), "info" == t ? Toastify({
         text: e,
         duration: o,
         close: !1,
@@ -67,35 +67,35 @@ export async function showToast(e, t = "info", o = 3e3) {
     }).showToast();
 }
 
-let a = !1;
+let messageBoxHasLoaded = !1;
 
 export async function loadMessageBox() {
-    a || (await loadResource("https://cdn.jsdelivr.net/npm/sweetalert2@11", "https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css"), 
-    a = !0);
+    messageBoxHasLoaded || (await loadResource("https://cdn.jsdelivr.net/npm/sweetalert2@11", "https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css"), 
+    messageBoxHasLoaded = !0);
 }
 
-async function c(t, o) {
+async function serverShowMessageBox(e, t) {
     await loadMessageBox();
-    const n = {
-        ...t,
+    const o = {
+        ...e,
         heightAuto: !1
     };
     try {
-        const t = await Swal.fire(n);
-        e.fetchApi("/riceround/message", {
+        const e = await Swal.fire(o);
+        api.fetchApi("/riceround/message", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: `id=${o}&message=${t.isConfirmed ? "1" : "0"}`
+            body: `id=${t}&message=${e.isConfirmed ? "1" : "0"}`
         });
-    } catch (t) {
-        e.fetchApi("/riceround/message", {
+    } catch (e) {
+        api.fetchApi("/riceround/message", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: `id=${o}&message=0`
+            body: `id=${t}&message=0`
         });
     }
     window.addEventListener("beforeunload", (function() {
@@ -104,7 +104,7 @@ async function c(t, o) {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: `id=${o}&message=0`,
+            body: `id=${t}&message=0`,
             keepalive: !0
         });
     }), {
@@ -112,94 +112,94 @@ async function c(t, o) {
     });
 }
 
-e.addEventListener("riceround_toast", (e => {
+api.addEventListener("riceround_toast", (e => {
     showToast(e.detail.content, e.detail.type, e.detail.duration);
-})), e.addEventListener("riceround_dialog", (e => {
-    c(JSON.parse(e.detail.json_content), e.detail.id);
+})), api.addEventListener("riceround_dialog", (e => {
+    serverShowMessageBox(JSON.parse(e.detail.json_content), e.detail.id);
 }));
 
-let r = !1;
+let dialogLibHasLoaded = !1;
 
-async function d(e, t, o = 5e3) {
+async function waitForObject(e, t, o = 5e3) {
     return new Promise(((n, i) => {
-        const s = Date.now(), a = () => {
-            Date.now() - s > o ? i(new Error(`Timeout waiting for ${t} to load`)) : e() ? n() : setTimeout(a, 50);
+        const a = Date.now(), s = () => {
+            Date.now() - a > o ? i(new Error(`Timeout waiting for ${t} to load`)) : e() ? n() : setTimeout(s, 50);
         };
-        a();
+        s();
     }));
 }
 
 export async function initDialogLib(e = !1) {
-    if (!r) try {
+    if (!dialogLibHasLoaded) try {
         const e = "https://unpkg.com/vue@3/dist/vue.global.js";
-        await loadResource(e, ""), await d((() => window.Vue), "vue");
+        await loadResource(e, ""), await waitForObject((() => window.Vue), "vue");
         const t = "https://cdn.jsdelivr.net/npm/element-plus", o = "https://cdn.jsdelivr.net/npm/element-plus/dist/index.css";
-        if (await loadResource(t, o), await d((() => window.ElementPlus), "element-plus"), 
+        if (await loadResource(t, o), await waitForObject((() => window.ElementPlus), "element-plus"), 
         null == window.DialogLib) {
             const e = "riceround/static/dialog-lib.umd.cjs";
-            await loadResource(e, ""), await d((() => window.DialogLib), "showLoginDialog");
+            await loadResource(e, ""), await waitForObject((() => window.DialogLib), "showLoginDialog");
         }
-        r = !0;
+        dialogLibHasLoaded = !0;
     } catch (e) {
         throw e;
     }
 }
 
-async function l(t) {
+async function setNodeAdditionalInfo(e) {
     try {
-        const o = {
+        const t = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(t)
-        }, n = await e.fetchApi("/riceround/set_node_additional_info", o);
-        await n.json();
+            body: JSON.stringify(e)
+        }, o = await api.fetchApi("/riceround/set_node_additional_info", t);
+        await o.json();
     } catch (e) {}
 }
 
-function u(e, t, o, n) {
+function changeWidget(e, t, o, n) {
     e.type = t, e.value = o, e.options = n;
 }
 
-function p(e, t, o, n) {
+function changeWidgets(e, t, o, n) {
     "customtext" === t && (t = "text");
     const i = n.options;
-    var s = e.widgets[1].value;
-    i?.values?.includes(s) || (s = n.value), "RiceRoundAdvancedChoiceNode" == e.comfyClass || "RiceRoundSimpleChoiceNode" == e.comfyClass ? u(e.widgets[1], t, s, i) : "RiceRoundIntNode" != e.comfyClass && "RiceRoundFloatNode" != e.comfyClass || 4 == e.widgets.length && (u(e.widgets[1], "number", s, i), 
-    u(e.widgets[2], "number", i?.min ?? 0, i), u(e.widgets[3], "number", i?.max ?? 100, i));
+    var a = e.widgets[1].value;
+    i?.values?.includes(a) || (a = n.value), "RiceRoundAdvancedChoiceNode" == e.comfyClass || "RiceRoundSimpleChoiceNode" == e.comfyClass ? changeWidget(e.widgets[1], t, a, i) : "RiceRoundIntNode" != e.comfyClass && "RiceRoundFloatNode" != e.comfyClass || 4 == e.widgets.length && (changeWidget(e.widgets[1], "number", a, i), 
+    changeWidget(e.widgets[2], "number", i?.min ?? 0, i), changeWidget(e.widgets[3], "number", i?.max ?? 100, i));
 }
 
-function m(e, t, o, n) {
+function adaptWidgetsBasedOnConnection(e, t, o, n) {
     if (e.outputs[0].type = o.type, "name" === e.widgets[0].label) {
         ([ "数值", "文本", "列表", "参数", "Parameter" ].includes(e.widgets[0].value) || "" == e.widgets[0].value) && (e.widgets[0].value = o.label ? o.label : o.name);
     }
-    const i = o.widget?.name ? o.widget?.name : o.name, s = t.widgets.find((e => e.name === i));
-    if (!s) return;
-    p(e, s.origType ?? s.type, t, s);
+    const i = o.widget?.name ? o.widget?.name : o.name, a = t.widgets.find((e => e.name === i));
+    if (!a) return;
+    changeWidgets(e, a.origType ?? a.type, t, a);
 }
 
-e.addEventListener("riceround_login_dialog", (t => {
-    const o = t.detail.client_key, n = t.detail.title;
+api.addEventListener("riceround_login_dialog", (e => {
+    const t = e.detail.client_key, o = e.detail.title;
     window.DialogLib.showLoginDialog({
-        title: n,
+        title: o,
         spyNetworkError: !0,
         mainKey: "riceround"
-    }).then((t => {
-        e.fetchApi("/riceround/auth_callback", {
+    }).then((e => {
+        api.fetchApi("/riceround/auth_callback", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                token: t,
-                client_key: o
+                token: e,
+                client_key: t
             })
         }), showToast("登录成功");
     })).catch((e => {
         showToast("登录失败", "error");
     }));
-})), e.addEventListener("riceround_show_workflow_payment_dialog", (e => {
+})), api.addEventListener("riceround_show_workflow_payment_dialog", (e => {
     const t = e.detail.title ?? "支付", o = e.detail.template_id;
     o ? window.DialogLib.showWorkflowQRPaymentDialog({
         title: t,
@@ -209,15 +209,15 @@ e.addEventListener("riceround_login_dialog", (t => {
     })).catch((e => {
         showToast("取消支付", "error");
     })) : showToast("模板ID不能为空", "error");
-})), e.addEventListener("riceround_clear_user_info", (async e => {
+})), api.addEventListener("riceround_clear_user_info", (async e => {
     const t = e.detail.clear_key;
     "all" == t ? (localStorage.removeItem("Comfy.Settings.RiceRound.User.long_token"), 
-    localStorage.removeItem("riceround_user_token"), o.ui.settings.setSettingValue("RiceRound.User.long_token", "")) : "long_token" == t ? (localStorage.removeItem("Comfy.Settings.RiceRound.User.long_token"), 
-    o.ui.settings.setSettingValue("RiceRound.User.long_token", "")) : "user_token" == t && localStorage.removeItem("riceround_user_token");
-})), e.addEventListener("execution_start", (async ({detail: e}) => {
+    localStorage.removeItem("riceround_user_token"), app.ui.settings.setSettingValue("RiceRound.User.long_token", "")) : "long_token" == t ? (localStorage.removeItem("Comfy.Settings.RiceRound.User.long_token"), 
+    app.ui.settings.setSettingValue("RiceRound.User.long_token", "")) : "user_token" == t && localStorage.removeItem("riceround_user_token");
+})), api.addEventListener("execution_start", (async ({detail: e}) => {
     let t = "";
-    const n = {};
-    for (const e of o.graph.nodes) {
+    const o = {};
+    for (const e of app.graph.nodes) {
         if ("RiceRoundDecryptNode" === e.type) return;
         if ("RiceRoundEncryptNode" === e.type) {
             const o = e.widgets?.find((e => "template_id" === e.name && e.value));
@@ -229,84 +229,85 @@ e.addEventListener("riceround_login_dialog", (t => {
             if (1 === !e.outputs?.[0]?.links?.length) continue;
             const t = e.widgets[1].options?.values ?? [];
             if (!t.length) continue;
-            const o = e.graph.links[e.outputs[0].links[0]];
-            if (!o) continue;
-            const i = e.graph.getNodeById(o.target_id);
+            const n = e.graph.links[e.outputs[0].links[0]];
+            if (!n) continue;
+            const i = e.graph.getNodeById(n.target_id);
             if (!i?.inputs || "RiceRoundDecryptNode" === i.comfyClass || "RiceRoundEncryptNode" === i.comfyClass) continue;
-            const s = i.inputs[o.target_slot];
-            if (!s || !i.widgets) continue;
-            const a = s.widget?.name || s.name;
-            if (!a) continue;
-            const c = `${i.comfyClass}.${a}`;
-            n[e.id] = {
-                class_name: c,
+            const a = i.inputs[n.target_slot];
+            if (!a || !i.widgets) continue;
+            const s = a.widget?.name || a.name;
+            if (!s) continue;
+            const d = `${i.comfyClass}.${s}`;
+            o[e.id] = {
+                class_name: d,
                 options_value: t,
                 node_type: e.type
             };
         }
     }
-    t && Object.keys(n).length > 0 && await l({
-        choice_node_map: n,
+    t && Object.keys(o).length > 0 && await setNodeAdditionalInfo({
+        choice_node_map: o,
         template_id: t
     });
 }));
 
-let g = null;
+let applySimpleChoiceNodeExtraLogicTimer = null;
 
-function h(e, t) {
-    g && clearTimeout(g), g = setTimeout((() => {
-        g = null;
+function applySimpleChoiceNodeExtraLogic(e, t) {
+    applySimpleChoiceNodeExtraLogicTimer && clearTimeout(applySimpleChoiceNodeExtraLogicTimer), 
+    applySimpleChoiceNodeExtraLogicTimer = setTimeout((() => {
+        applySimpleChoiceNodeExtraLogicTimer = null;
         const o = t.graph.extra?.choice_node_map;
         if (e && e.widgets && 2 === e.widgets.length && o && o[e.id]) {
             const t = {
                 values: o[e.id]
             };
-            u(e.widgets[1], "combo", e.widgets[1].value, t);
+            changeWidget(e.widgets[1], "combo", e.widgets[1].value, t);
         }
     }), 200);
 }
 
-function f(e) {
+function adaptWidgetsToConnection(e) {
     if (!e.outputs || 0 === e.outputs.length) return;
     const t = e.outputs[0].links;
     if (t && 1 === t.length) {
-        const n = e.graph.links[t[0]];
-        if (!n) return;
-        const i = e.graph.getNodeById(n.target_id);
-        if (!i || !i.inputs) return;
-        if ("RiceRoundDecryptNode" == i.comfyClass && "RiceRoundSimpleChoiceNode" == e.comfyClass) return void h(e, o);
-        if ("RiceRoundEncryptNode" == i.comfyClass || "RiceRoundDecryptNode" == i.comfyClass) return;
-        const s = i.inputs[n.target_slot];
-        if (!s || void 0 === i.widgets) return;
-        m(e, i, s, o);
+        const o = e.graph.links[t[0]];
+        if (!o) return;
+        const n = e.graph.getNodeById(o.target_id);
+        if (!n || !n.inputs) return;
+        if ("RiceRoundDecryptNode" == n.comfyClass && "RiceRoundSimpleChoiceNode" == e.comfyClass) return void applySimpleChoiceNodeExtraLogic(e, app);
+        if ("RiceRoundEncryptNode" == n.comfyClass || "RiceRoundDecryptNode" == n.comfyClass) return;
+        const i = n.inputs[o.target_slot];
+        if (!i || void 0 === n.widgets) return;
+        adaptWidgetsBasedOnConnection(e, n, i, app);
     } else t && 0 !== t.length || ("RiceRoundAdvancedChoiceNode" == e.comfyClass || "RiceRoundSimpleChoiceNode" == e.comfyClass ? (e.widgets[0].value = "Parameter", 
     e.outputs[0].type = "*") : "RiceRoundIntNode" == e.comfyClass ? 4 == e.widgets.length && (e.widgets[0].value = "数值", 
     e.widgets[1].value = 0, e.widgets[2].value = 0, e.widgets[3].value = 100) : "RiceRoundFloatNode" == e.comfyClass && 4 == e.widgets.length && (e.widgets[0].value = "数值", 
     e.widgets[1].value = 0, e.widgets[2].value = 0, e.widgets[3].value = 100));
 }
 
-function w(e) {
+function setupParameterNode(e) {
     const t = e.prototype.onAdded;
     e.prototype.onAdded = function() {
-        t?.apply(this, arguments), f(this);
+        t?.apply(this, arguments), adaptWidgetsToConnection(this);
     };
-    const n = e.prototype.onAfterGraphConfigured;
+    const o = e.prototype.onAfterGraphConfigured;
     e.prototype.onAfterGraphConfigured = function() {
-        n?.apply(this, arguments), f(this);
+        o?.apply(this, arguments), adaptWidgetsToConnection(this);
     };
-    const i = e.prototype.onConnectOutput;
-    e.prototype.onConnectOutput = function(e, t, o, n, s) {
-        return !(!o.widget && !(o.type in [ "STRING", "COMBO", "combo" ])) && (!i || (result = i.apply(this, arguments), 
+    const n = e.prototype.onConnectOutput;
+    e.prototype.onConnectOutput = function(e, t, o, i, a) {
+        return !(!o.widget && !(o.type in [ "STRING", "COMBO", "combo" ])) && (!n || (result = n.apply(this, arguments), 
         result));
     };
-    const s = e.prototype.onConnectionsChange;
-    e.prototype.onConnectionsChange = function(e, t, n, i, a) {
-        return 2 != e || n || !this?.type || "RiceRoundAdvancedChoiceNode" != this.type && "RiceRoundSimpleChoiceNode" != this.type || (this.widgets[0].value = "Parameter"), 
-        o.configuringGraph || f(this), s?.apply(this, arguments);
+    const i = e.prototype.onConnectionsChange;
+    e.prototype.onConnectionsChange = function(e, t, o, n, a) {
+        return 2 != e || o || !this?.type || "RiceRoundAdvancedChoiceNode" != this.type && "RiceRoundSimpleChoiceNode" != this.type || (this.widgets[0].value = "Parameter"), 
+        app.configuringGraph || adaptWidgetsToConnection(this), i?.apply(this, arguments);
     };
 }
 
-function y() {
+function generateUUID() {
     let e = "";
     for (let t = 0; t < 32; t++) {
         e += Math.floor(16 * Math.random()).toString(16);
@@ -314,18 +315,18 @@ function y() {
     return e;
 }
 
-function R() {
+function rebootAPI() {
     if ("electronAPI" in window) return window.electronAPI.restartApp(), !0;
-    e.fetchApi("/manager/reboot");
+    api.fetchApi("/manager/reboot");
 }
 
-o.registerExtension({
+app.registerExtension({
     name: "riceround.custom",
     setup() {
         initDialogLib();
     },
     async beforeRegisterNodeDef(e, t, o) {
-        if ([ "RiceRoundAdvancedChoiceNode", "RiceRoundSimpleChoiceNode", "RiceRoundIntNode", "RiceRoundFloatNode" ].includes(t.name) && w(e), 
+        if ([ "RiceRoundAdvancedChoiceNode", "RiceRoundSimpleChoiceNode", "RiceRoundIntNode", "RiceRoundFloatNode" ].includes(t.name) && setupParameterNode(e), 
         "RiceRoundEncryptNode" == t.name) {
             const t = 400, o = 120, n = e.prototype.onNodeCreated;
             e.prototype.onNodeCreated = function() {
@@ -338,15 +339,15 @@ o.registerExtension({
             };
         }
     },
-    loadedGraphNode: async t => {
-        if (!t.title) {
-            const o = t.type;
-            if (o && o.includes("RiceRoundAdvancedChoiceNode")) {
-                const t = o.match(/RiceRoundAdvancedChoiceNode_([^_]+)_/);
-                if (!t) return;
-                const n = t[1];
+    loadedGraphNode: async e => {
+        if (!e.title) {
+            const t = e.type;
+            if (t && t.includes("RiceRoundAdvancedChoiceNode")) {
+                const e = t.match(/RiceRoundAdvancedChoiceNode_([^_]+)_/);
+                if (!e) return;
+                const o = e[1];
                 await loadMessageBox();
-                const i = await Swal.fire({
+                const n = await Swal.fire({
                     title: "高级选择节点安装确认",
                     html: '\n                        <div>\n                            <p>检测到高级选择节点，是否需要安装相关组件？</p>\n                            <div style="text-align: left; margin-top: 1em;">\n                                <input type="checkbox" id="swal-restart-checkbox">\n                                <label for="swal-restart-checkbox">安装后重启服务</label>\n                            </div>\n                        </div>\n                    ',
                     icon: "question",
@@ -363,20 +364,20 @@ o.registerExtension({
                         needReboot: document.getElementById("swal-restart-checkbox").checked
                     })
                 });
-                if (i.isConfirmed) try {
-                    if (!(await e.fetchApi("/riceround/install_choice_node", {
+                if (n.isConfirmed) try {
+                    if (!(await api.fetchApi("/riceround/install_choice_node", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            template_id: n,
-                            need_reboot: i.value.needReboot
+                            template_id: o,
+                            need_reboot: n.value.needReboot
                         })
                     })).ok) throw new Error("Installation failed");
                     await Swal.fire({
                         title: "安装成功",
-                        text: i.value.needReboot ? "组件已安装，服务即将重启" : "组件已安装完成",
+                        text: n.value.needReboot ? "组件已安装，服务即将重启" : "组件已安装完成",
                         icon: "success",
                         heightAuto: !1,
                         customClass: {
@@ -415,7 +416,7 @@ o.registerExtension({
                 type: "button",
                 label: "Generate UUID",
                 callback: () => {
-                    const t = y();
+                    const t = generateUUID();
                     for (let o = 0; o < e.widgets.length; o++) {
                         let n = e.widgets[o];
                         if ("template_id" == n.name) {
