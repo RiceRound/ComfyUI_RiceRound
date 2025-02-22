@@ -1,3 +1,4 @@
+import logging
 import platform
 import random
 import sys
@@ -119,6 +120,7 @@ async def auth_callback(request):
     auth_query = await request.json()
     token = auth_query.get("token", "")
     client_key = auth_query.get("client_key", "")
+    logging.info(f"### auth_callback: {token} {client_key}")
     if token and client_key:
         token = unquote(token)
         client_key = unquote(client_key)

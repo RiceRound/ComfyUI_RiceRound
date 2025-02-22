@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import requests
@@ -56,6 +57,9 @@ class AuthUnit:
                     self.last_check_time = time.time()
                     return self.token, "", RiceRoundErrorDef.SUCCESS
                 else:
+                    logging.warn(
+                        f"get_user_token failed, {response.status_code} {response.text}"
+                    )
                     error_message = "登录结果错误"
                     error_code = RiceRoundErrorDef.UNKNOWN_ERROR
                     try:
@@ -119,6 +123,7 @@ class AuthUnit:
 
     def set_user_token(self, user_token, client_key):
         if not client_key or self.client_key != client_key:
+            logging.warn(f"client_key is not match, {self.client_key} != {client_key}")
             return
         if not user_token:
             user_token = ""

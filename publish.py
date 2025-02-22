@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import requests
 from .rice_prompt_info import RicePromptInfo
@@ -112,6 +113,7 @@ class Publish:
                 else:
                     return False, response_data.get("message", "Unknown error")
             else:
+                logging.error(f"Server returned status: {response}")
                 return False, f"Server returned status code: {response.status_code}"
         except Exception as e:
             return False, str(e)
