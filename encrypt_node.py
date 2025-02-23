@@ -2,6 +2,7 @@ from collections import defaultdict
 import copy
 from io import BytesIO
 import json
+import logging
 import os
 import random
 import shutil
@@ -11,7 +12,6 @@ import comfy.utils
 import time
 from PIL import Image
 from .rice_def import RiceRoundErrorDef
-from .rice_install_client import RiceInstallClient
 from .auth_unit import AuthUnit
 from .publish import Publish
 from .utils import combine_files
@@ -93,7 +93,6 @@ class RiceRoundEncryptNode:
             filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0]
         )
         results = list()
-        pbar = comfy.utils.ProgressBar(images.shape[0])
         preview_path = None
         for batch_number, image in enumerate(images):
             i = 255.0 * image.cpu().numpy()
@@ -101,7 +100,6 @@ class RiceRoundEncryptNode:
             if batch_number == 0:
                 preview_path = os.path.join(publish_folder, "preview.png")
                 img.save(preview_path)
-            pbar.update_absolute(batch_number, images.shape[0], ("PNG", img, None))
             filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
             file = f"{filename_with_batch_num}_{counter:05}_.png"
             img.save(
@@ -138,12 +136,15 @@ class RiceRoundEncryptNode:
                     os.path.join(publish_folder, f"{template_id}.bin"),
                 )
         if RicePromptInfo().get_run_client():
+            from .rice_install_client import RiceInstallClient
+
             error_code, error_msg = RiceInstallClient().run_client()
             if error_code != RiceRoundErrorDef.SUCCESS:
                 PromptServer.instance.send_sync(
                     "riceround_toast",
                     {"content": "加密节点发布完成，但无法启动client，建议官网重新安装", "type": "error"},
                 )
+        logging.info(f"Debug - results length: {len(results)}, images: {results}")
         return {"ui": {"images": results}}
 
 

@@ -32,7 +32,7 @@ class RicePromptInfo:
             "Settings", "auto_overwrite", False
         )
         self.auto_publish = self._read_config_bool("Settings", "auto_publish", True)
-        self.run_client = self._read_config_bool("Settings", "run_client", True)
+        self.run_client = self._read_config_bool("Settings", "run_client", False)
         self.wait_time = self._read_config_int("Settings", "wait_time", 600)
         self.choice_classname_map = {}
         self.load_choice_node_map()
