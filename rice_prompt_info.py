@@ -39,7 +39,6 @@ class RicePromptInfo:
         RicePromptInfo._initialized = True
 
     def _read_config_bool(self, section, key, default=False):
-        "读取配置文件中的布尔值"
         try:
             config = configparser.ConfigParser()
             config.read(self.config_path, encoding="utf-8")
@@ -49,7 +48,6 @@ class RicePromptInfo:
             return default
 
     def _read_config_int(self, section, key, default=0):
-        "读取配置文件中的整数"
         try:
             config = configparser.ConfigParser()
             config.read(self.config_path, encoding="utf-8")
@@ -59,7 +57,6 @@ class RicePromptInfo:
             return default
 
     def _write_config_bool(self, section, key, value):
-        "写入布尔值到配置文件"
         try:
             config = configparser.ConfigParser()
             config.read(self.config_path, encoding="utf-8")
@@ -74,7 +71,6 @@ class RicePromptInfo:
             return False
 
     def _write_config_int(self, section, key, value):
-        "写入整数到配置文件"
         try:
             config = configparser.ConfigParser()
             config.read(self.config_path, encoding="utf-8")
@@ -119,7 +115,6 @@ class RicePromptInfo:
         return choice_server_folder
 
     def load_choice_node_map(self):
-        "\n        Load and parse choice node options from JSON files in the choice_server_folder.\n        Each JSON file should contain an 'elements' array with choice node configurations.\n"
         choice_server_folder = self.get_choice_server_folder()
         for file in choice_server_folder.glob("*.json"):
             try:
@@ -225,7 +220,6 @@ class RiceEnvConfig:
         return " ".join(filtered_add_cmd)
 
     def _get_python_path(self):
-        "获取Python可执行文件路径，并进行容错处理"
         try:
             return sys.executable.replace("\\", "/").strip("\"'")
         except Exception as e:
@@ -233,7 +227,6 @@ class RiceEnvConfig:
             return ""
 
     def _get_working_directory(self):
-        "获取工作目录，优先使用脚本所在目录，查找custom_nodes目录"
         try:
             script_abs_path = os.path.abspath(sys.argv[0]).replace("\\", "/")
             script_dir = os.path.dirname(script_abs_path)
@@ -259,7 +252,6 @@ class RiceEnvConfig:
                 return ""
 
     def _get_add_cmd(self):
-        "获取并过滤命令行参数"
         try:
             cmd_args = " ".join(sys.argv[1:])
             return self.filter_add_cmd(cmd_args).strip()
@@ -268,7 +260,6 @@ class RiceEnvConfig:
             return ""
 
     def _get_script_name(self):
-        "获取脚本名称，提取.py文件名"
         try:
             py_file_pattern = re.compile("[/\\\\]([^/\\\\]+\\.py)", re.IGNORECASE)
             match = py_file_pattern.search(sys.argv[0])
@@ -284,7 +275,6 @@ class RiceEnvConfig:
             return "main.py"
 
     def read_env(self):
-        "获取环境信息，每个变量单独获取并容错"
         python_path = self._get_python_path()
         working_directory = self._get_working_directory()
         add_cmd = self._get_add_cmd()

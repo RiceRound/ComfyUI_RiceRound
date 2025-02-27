@@ -156,22 +156,6 @@ app.registerExtension({
                 }), e || localStorage.setItem("RiceRound.Setting.auto_overwrite", e);
             }
         }), app.ui.settings.addSetting({
-            id: "RiceRound.Publish.auto_overwrite",
-            name: "自动覆盖更新同id工作流",
-            type: "boolean",
-            tooltip: "设置为true时，会自动覆盖已有的template_id的数据",
-            onChange: function(e) {
-                api.fetchApi("/riceround/set_auto_overwrite", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        auto_overwrite: e
-                    })
-                });
-            }
-        }), app.ui.settings.addSetting({
             id: "RiceRound.Cloud.export",
             name: "生成云机器配置",
             type: () => {

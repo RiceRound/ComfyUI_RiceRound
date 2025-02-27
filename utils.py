@@ -15,8 +15,6 @@ import subprocess
 
 
 def pil2tensor(images):
-    "Converts a PIL Image or a list of PIL Images to a tensor."
-
     def single_pil2tensor(image):
         np_image = np.array(image).astype(np.float32) / 255.0
         if np_image.ndim == 2:
@@ -31,7 +29,6 @@ def pil2tensor(images):
 
 
 def calculate_machine_id():
-    "\n    获取跨平台的机器唯一标识符，类似于 gopsutil 的 HostID\n"
     system = platform.system()
     if system == "Linux":
         try:
@@ -72,7 +69,6 @@ def calculate_machine_id():
 
 
 def normalize_machine_id(machine_id):
-    "\n    接受一个机器标识符，并返回经过 MD5 哈希处理的规范化标识符\n"
     salt = "RiceRound"
     trimmed_id = machine_id.strip()
     lowercase_id = trimmed_id.lower()
@@ -88,7 +84,6 @@ def get_local_app_setting_path():
 
 
 def get_machine_id():
-    "\n    返回机器ID，为了兼容各个平台，各个语言，需要统一读写这个值\n"
     config_dir = get_local_app_setting_path()
     config_file = config_dir / "machine.ini"
     try:
@@ -162,6 +157,5 @@ def combine_files(files, password, zip_file_path):
 
 
 def generate_random_string(length):
-    "\n    Generate a random string of specified length using uppercase and lowercase letters.\n    \n    Args:\n        length (int): The desired length of the random string\n        \n    Returns:\n        str: A random string of the specified length\n"
     letters = string.ascii_letters
     return "".join(random.choice(letters) for _ in range(length))

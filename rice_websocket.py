@@ -44,7 +44,6 @@ class TaskStatus(Enum):
 
 class TaskInfo:
     def __init__(self, json_data):
-        "\n        Initialize TaskInfo from JSON data\n        \n        Args:\n            json_data (dict): JSON data containing task information\n"
         self.task_uuid = json_data.get("task_uuid", "")
         self.state = TaskStatus(json_data.get("state", 0))
         self.progress = json_data.get("progress", 0)
@@ -61,7 +60,6 @@ class TaskInfo:
         self.preview_refreshed = False
 
     def to_dict(self):
-        "\n        Convert TaskInfo to a dictionary\n        \n        Returns:\n            dict: The dictionary representation of the TaskInfo object\n"
         return {
             "task_uuid": self.task_uuid,
             "state": self.state.value,
@@ -116,7 +114,6 @@ class TaskInfo:
             return self.state >= TaskStatus.FINISHED
 
     def __str__(self):
-        "\n        Get a string representation of the task\n        \n        Returns:\n            str: A human-readable string describing the task status\n"
         return f"Task {self.task_uuid}: {self.state.name} ({self.progress}%) - {self.progress_text}"
 
 

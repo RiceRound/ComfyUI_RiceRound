@@ -19,7 +19,6 @@ class RiceInstallClient:
         ) = self._get_platform_executables()
 
     def _get_platform_executables(self):
-        "Get platform-specific executable filenames."
         if sys.platform == "win32":
             return "share_client_windows.exe", "share_client.exe"
         elif sys.platform == "darwin":
@@ -61,54 +60,20 @@ class RiceInstallClient:
             return False
         try:
             import tomlkit
-            from tomlkit import comment, table, dumps
+            from tomlkit import dumps
 
             env_config = RiceEnvConfig().read_env()
             if not env_config:
                 print("Error: Failed to read environment config")
                 return False
-            if not env_config.get("PythonPath") or not os.path.exists(
-                env_config["PythonPath"]
-            ):
-                print("Error: Invalid Python path in environment config")
-                return False
-            env_working_dir = env_config.get("WorkingDirectory")
-            env_script_name = env_config.get("ScriptName")
-            if not env_working_dir or not env_script_name:
-                print(
-                    "Error: Missing working directory or script name in environment config"
-                )
-                return False
-            if os.path.isabs(env_script_name) and os.path.exists(env_script_name):
-                env_script_path = env_script_name
-            else:
-                env_script_path = os.path.join(env_working_dir, env_script_name)
-            if not os.path.exists(env_script_path):
-                print("Error: ComfyUI script path does not exist in environment config")
-                return False
             with open(client_toml_path, "r", encoding="utf-8") as f:
                 toml_data = tomlkit.load(f)
-                comfyui_config = toml_data.get("ComfyUI")
-                if not comfyui_config or not isinstance(comfyui_config, dict):
-                    return False
-                script_name = comfyui_config.get("ComfyuiScriptName")
-                working_dir = comfyui_config.get("WorkingDirectory")
-                if working_dir is None or script_name is None:
-                    comfyui_config["WorkingDirectory"] = env_config["WorkingDirectory"]
-                    comfyui_config["ComfyuiScriptName"] = env_config["ScriptName"]
-                else:
-                    if os.path.isabs(script_name) and os.path.exists(script_name):
-                        script_path = script_name
-                    else:
-                        script_path = os.path.join(working_dir, script_name)
-                    if not os.path.exists(script_path):
-                        comfyui_config["WorkingDirectory"] = env_config[
-                            "WorkingDirectory"
-                        ]
-                        comfyui_config["ComfyuiScriptName"] = env_config["ScriptName"]
-                python_path = comfyui_config.get("PythonPath")
-                if python_path is None or not os.path.exists(python_path):
-                    comfyui_config["PythonPath"] = env_config["PythonPath"]
+            comfyui_config = toml_data.get("ComfyUI")
+            if not comfyui_config or not isinstance(comfyui_config, dict):
+                return False
+            comfyui_config["PythonPath"] = env_config["PythonPath"]
+            comfyui_config["WorkingDirectory"] = env_config["WorkingDirectory"]
+            comfyui_config["ComfyuiScriptName"] = env_config["ScriptName"]
             with open(client_toml_path, "w", encoding="utf-8") as f:
                 f.write(dumps(toml_data))
             return True
@@ -119,7 +84,6 @@ class RiceInstallClient:
     def _generate_toml_config(
         self, secret_token, comfyui_port=6607, local_server_port=6608
     ):
-        "Internal function to generate TOML configuration.\n        \n        Args:\n            secret_token: The authentication token\n            comfyui_port: Port for ComfyUI, defaults to 6607\n            local_server_port: Port for local server, defaults to 6608\n            \n        Returns:\n            str: The generated TOML content\n"
         try:
             import tomlkit
             from tomlkit import comment, table, dumps
@@ -175,7 +139,6 @@ class RiceInstallClient:
             return False
 
     def export_toml(self, secret_token):
-        "Generate and return TOML configuration content."
         return self._generate_toml_config(secret_token)
 
     def auto_fix_toml(self, comfyui_port=6607, local_server_port=8689):

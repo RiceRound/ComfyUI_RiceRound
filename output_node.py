@@ -151,7 +151,6 @@ class RiceRoundDecryptNode:
         return (image_tensor,)
 
     def create_task(self, input_data, template_id, user_token):
-        "\n        Create a task and return the task UUID.\n        \n        Args:\n            task_url (str): The URL to send the task request to\n            request_data (dict): The data to send in the request\n            headers (dict): The headers to send with the request\n            \n        Returns:\n            str: The task UUID if successful\n            \n        Raises:\n            ValueError: If the request fails or response is invalid\n"
         task_url = self.url_config.prompt_task_url
         headers = {
             "Authorization": f"Bearer {user_token}",

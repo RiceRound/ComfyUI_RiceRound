@@ -26,7 +26,6 @@ class RiceRoundPromptHandler:
             self._initialized = True
 
     def onprompt_handler(self, json_data):
-        "\n        处理传入的 JSON 数据\n        :param json_data: 输入的 JSON 数据，包含各种任务信息\n"
         RicePromptInfo().clear()
         if "prompt" not in json_data:
             return json_data
@@ -86,7 +85,6 @@ class RiceRoundPromptHandler:
         return id_type_map, node_id_map
 
     def replace_output_prompt(self, prompt_data):
-        "\n        替换输出节点中的 task_id\n        :param prompt_data: 任务的 prompt 数据\n        :return: 替换后的 prompt 数据\n"
         for node_id, node in prompt_data.items():
             if node.get("class_type") == "RiceRoundOutputImageNode":
                 node["inputs"]["task_id"] = self.task_uuid

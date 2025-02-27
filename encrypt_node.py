@@ -458,14 +458,12 @@ class Encrypt:
         self.output_file(json_dict, f"{self.template_id}_template")
 
     def assemble_new_prompt(self):
-        "\n        组装新的prompt配置。主要完成:\n        1. 移除不需要的节点\n        2. 转换特定节点的类型和输入\n        3. 保存处理后的prompt配置\n"
         new_prompt = self._create_filtered_prompt()
         self._replace_encrypt_node(new_prompt)
         self._transform_node_types(new_prompt)
         self.output_file(new_prompt, f"{self.template_id}_job")
 
     def _create_filtered_prompt(self):
-        "\n        创建经过过滤的prompt副本，移除不需要的节点\n"
         new_prompt = copy.deepcopy(self.original_prompt)
         exclude_node_ids = self._get_exclude_node_ids(new_prompt)
         for node_id in exclude_node_ids:
@@ -522,7 +520,6 @@ class Encrypt:
             raise
 
     def _get_exclude_node_ids(self, prompt):
-        "\n        获取需要从prompt中排除的节点ID集合\n"
         EXCLUDE_NODE_TYPES = {"RiceRoundDecryptNode"}
         exclude_ids = self.related_node_ids.difference(set(self.input_node_map.keys()))
         for node_id, node in prompt.items():
@@ -531,7 +528,6 @@ class Encrypt:
         return exclude_ids
 
     def _transform_node_types(self, prompt):
-        "\n        转换节点类型和更新节点输入配置\n"
         NODE_TYPE_MAPPING = {
             "RiceRoundImageBridgeNode": {
                 "new_type": "RiceRoundDownloadImageNode",
