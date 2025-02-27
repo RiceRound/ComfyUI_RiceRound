@@ -74,6 +74,72 @@ export async function loadMessageBox() {
     messageBoxHasLoaded = !0);
 }
 
+async function showClientInstallMessageBox(e, t) {
+    const o = localStorage.getItem("riceround_client_dontshow");
+    if (!(o && Number(o) > Date.now())) if (await loadMessageBox(), e) {
+        if (!t) {
+            const e = await Swal.fire({
+                title: "Client未启动",
+                html: '本机Client似乎没有启动，这不影响发布，但发布后可能没有算力可用，可以点击<a href="https://help.riceround.online" target="_blank">这里</a>寻求帮助，也可以尝试修复本机配置或打开Client文件夹查看详情。',
+                icon: "warning",
+                showCancelButton: !0,
+                showDenyButton: !0,
+                confirmButtonText: "修复配置",
+                denyButtonText: "打开文件夹",
+                cancelButtonText: "不再提示",
+                heightAuto: !1,
+                customClass: {
+                    container: "riceround-swal-top-container"
+                }
+            });
+            if (e.isConfirmed) await api.fetchApi("/riceround/fix_toml", {
+                method: "Get"
+            }); else if (e.isDenied) await api.fetchApi("/riceround/open_folder?id=1", {
+                method: "GET"
+            }); else if (e.dismiss === Swal.DismissReason.cancel) {
+                const e = Date.now() + 2592e5;
+                localStorage.setItem("riceround_client_dontshow", e.toString());
+            }
+        }
+    } else {
+        const e = await Swal.fire({
+            title: "未安装Client",
+            html: "您似乎没有安装Client，这样即使完成发布后，仍然可能没有算力支撑导致无法使用，详情请点击下方按钮查看并安装",
+            icon: "warning",
+            confirmButtonText: "查看安装说明",
+            showCancelButton: !0,
+            cancelButtonText: "不再提示",
+            heightAuto: !1,
+            customClass: {
+                container: "riceround-swal-top-container"
+            }
+        });
+        if (e.isConfirmed) window.open("https://help.riceround.online", "_blank"); else if (e.dismiss === Swal.DismissReason.cancel) {
+            const e = Date.now() + 2592e5;
+            localStorage.setItem("riceround_client_dontshow", e.toString());
+        }
+    }
+}
+
+function send_message(e, t) {
+    api.fetchApi("/riceround/message", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            id: e,
+            message: t
+        })
+    });
+}
+
+var skip_next = 0;
+
+function send_onstart() {
+    return skip_next > 0 ? (skip_next -= 1, !1) : (send_message(-1, "__start__"), !0);
+}
+
 async function serverShowMessageBox(e, t) {
     await loadMessageBox();
     const o = {
@@ -81,30 +147,46 @@ async function serverShowMessageBox(e, t) {
         heightAuto: !1
     };
     try {
-        const e = await Swal.fire(o);
+        const e = await Swal.fire(o), n = {
+            confirmed: e.isConfirmed ? 1 : 0,
+            value: e.value,
+            dismiss: e.dismiss
+        };
         api.fetchApi("/riceround/message", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: `id=${t}&message=${e.isConfirmed ? "1" : "0"}`
+            body: JSON.stringify({
+                id: t,
+                message: n
+            })
         });
     } catch (e) {
         api.fetchApi("/riceround/message", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: `id=${t}&message=0`
+            body: JSON.stringify({
+                id: t,
+                message: {
+                    confirmed: 0,
+                    error: e.message
+                }
+            })
         });
     }
     window.addEventListener("beforeunload", (function() {
         fetch("/riceround/message", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: `id=${t}&message=0`,
+            body: JSON.stringify({
+                id: t,
+                message: "__cancel__"
+            }),
             keepalive: !0
         });
     }), {
@@ -114,8 +196,10 @@ async function serverShowMessageBox(e, t) {
 
 api.addEventListener("riceround_toast", (e => {
     showToast(e.detail.content, e.detail.type, e.detail.duration);
-})), api.addEventListener("riceround_dialog", (e => {
+})), api.addEventListener("riceround_server_dialog", (e => {
     serverShowMessageBox(JSON.parse(e.detail.json_content), e.detail.id);
+})), api.addEventListener("riceround_client_install_dialog", (e => {
+    showClientInstallMessageBox(e.detail.is_installed, e.detail.is_running);
 }));
 
 let dialogLibHasLoaded = !1;
@@ -248,7 +332,7 @@ api.addEventListener("riceround_login_dialog", (e => {
     t && Object.keys(o).length > 0 && await setNodeAdditionalInfo({
         choice_node_map: o,
         template_id: t
-    });
+    }), send_onstart();
 }));
 
 let applySimpleChoiceNodeExtraLogicTimer = null;
@@ -345,15 +429,16 @@ app.registerExtension({
             if (t && t.includes("RiceRoundAdvancedChoiceNode")) {
                 const e = t.match(/RiceRoundAdvancedChoiceNode_([^_]+)_/);
                 if (!e) return;
-                const o = e[1];
+                const o = e[1], n = localStorage.getItem("riceround_choice_dontshow");
+                if (n && Number(n) > Date.now()) return;
                 await loadMessageBox();
-                const n = await Swal.fire({
+                const i = await Swal.fire({
                     title: "高级选择节点安装确认",
                     html: '\n                        <div>\n                            <p>检测到高级选择节点，是否需要安装相关组件？</p>\n                            <div style="text-align: left; margin-top: 1em;">\n                                <input type="checkbox" id="swal-restart-checkbox">\n                                <label for="swal-restart-checkbox">安装后重启服务</label>\n                            </div>\n                        </div>\n                    ',
                     icon: "question",
                     showCancelButton: !0,
                     confirmButtonText: "安装",
-                    cancelButtonText: "取消",
+                    cancelButtonText: "不再提示",
                     heightAuto: !1,
                     backdrop: !0,
                     allowOutsideClick: !1,
@@ -364,7 +449,11 @@ app.registerExtension({
                         needReboot: document.getElementById("swal-restart-checkbox").checked
                     })
                 });
-                if (n.isConfirmed) try {
+                if (i.dismiss === Swal.DismissReason.cancel) {
+                    const e = Date.now() + 2592e5;
+                    return void localStorage.setItem("riceround_choice_dontshow", e.toString());
+                }
+                if (i.isConfirmed) try {
                     if (!(await api.fetchApi("/riceround/install_choice_node", {
                         method: "POST",
                         headers: {
@@ -372,12 +461,12 @@ app.registerExtension({
                         },
                         body: JSON.stringify({
                             template_id: o,
-                            need_reboot: n.value.needReboot
+                            need_reboot: i.value.needReboot
                         })
                     })).ok) throw new Error("Installation failed");
                     await Swal.fire({
                         title: "安装成功",
-                        text: n.value.needReboot ? "组件已安装，服务即将重启" : "组件已安装完成",
+                        text: i.value.needReboot ? "组件已安装，服务即将重启" : "组件已安装完成",
                         icon: "success",
                         heightAuto: !1,
                         customClass: {

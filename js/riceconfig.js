@@ -11,8 +11,62 @@ function isValidJWTFormat(e) {
     if (e.length < 50) return !1;
     const t = e.split(".");
     if (3 !== t.length) return !1;
-    const o = /^[A-Za-z0-9_-]+$/;
-    return t.every((e => e.length > 0 && o.test(e)));
+    const n = /^[A-Za-z0-9_-]+$/;
+    return t.every((e => e.length > 0 && n.test(e)));
+}
+
+async function exportTomlMessageBox(e) {
+    const t = document.createElement("div");
+    document.body.appendChild(t);
+    const {createApp: n, ref: o} = Vue, i = n({
+        template: '\n            <el-dialog\n                v-model="dialogVisible"\n                :title="title"\n                width="500px"                \n                center\n                @close="handleClose"\n            >       \n                <el-form :model="form" label-position="top">\n                    <el-form-item label="请输入机器码">\n                        <el-input\n                            v-model="form.secretToken"\n                            type="textarea"\n                            :rows="4"\n                            placeholder="请输入从官网获取的机器码"\n                            :disabled="loading"\n                        />\n                    </el-form-item>\n                </el-form>\n                <template #footer>\n                    <div class="dialog-footer" style="display: flex; justify-content: flex-end; gap: 12px;">\n                        <el-button                            \n                            @click="handleGenerate"\n                            :loading="loading"\n                        >\n                            生成配置文件\n                        </el-button>\n                        <el-button\n                            type="primary"\n                            @click="openHelp"\n                        >\n                            帮助文档\n                        </el-button>\n                    </div>\n                </template>\n            </el-dialog>\n        ',
+        setup() {
+            const e = o(!0), n = o(!1), l = o({
+                secretToken: ""
+            }), a = () => {
+                document.body.removeChild(t), i.unmount();
+            };
+            return {
+                dialogVisible: e,
+                loading: n,
+                form: l,
+                handleClose: a,
+                handleGenerate: async () => {
+                    if (l.value.secretToken) {
+                        n.value = !0;
+                        try {
+                            const e = await api.fetchApi("/riceround/export_toml", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    secret_token: l.value.secretToken
+                                })
+                            });
+                            if (e.ok) {
+                                const t = await e.blob(), n = window.URL.createObjectURL(t), o = document.createElement("a");
+                                o.href = n, o.download = "client.toml", document.body.appendChild(o), o.click(), 
+                                window.URL.revokeObjectURL(n), document.body.removeChild(o), ElementPlus.ElMessage.success("配置文件生成成功"), 
+                                a();
+                            } else {
+                                const t = await e.json();
+                                ElementPlus.ElMessage.error(t.message || "生成配置文件失败");
+                            }
+                        } catch (e) {
+                            ElementPlus.ElMessage.error("生成配置文件失败");
+                        } finally {
+                            n.value = !1;
+                        }
+                    } else ElementPlus.ElMessage.warning("请输入机器码");
+                },
+                openHelp: () => {
+                    window.open("https://help.riceround.online/", "_blank");
+                }
+            };
+        }
+    });
+    i.use(ElementPlus), i.mount(t);
 }
 
 async function set_exclusive_user(e) {
@@ -35,14 +89,14 @@ app.registerExtension({
             id: "RiceRound.User.logout",
             name: "登出当前用户",
             type: () => {
-                const e = document.createElement("tr"), t = document.createElement("td"), o = document.createElement("input");
-                return o.type = "button", o.value = "登出", o.style.borderRadius = "8px", o.style.padding = "8px 16px", 
-                o.style.fontSize = "14px", o.style.cursor = "pointer", o.style.border = "1px solid #666", 
-                o.style.backgroundColor = "#444", o.style.color = "#fff", o.onclick = async () => {
+                const e = document.createElement("tr"), t = document.createElement("td"), n = document.createElement("input");
+                return n.type = "button", n.value = "登出", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
+                n.style.fontSize = "14px", n.style.cursor = "pointer", n.style.border = "1px solid #666", 
+                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onclick = async () => {
                     localStorage.removeItem("Comfy.Settings.RiceRound.User.long_token"), localStorage.removeItem(UserTokenKey), 
                     app.ui.settings.setSettingValue("RiceRound.User.long_token", ""), await api.fetchApi("/riceround/logout"), 
                     showToast("登出成功");
-                }, t.appendChild(o), e.appendChild(t), e;
+                }, t.appendChild(n), e.appendChild(t), e;
             }
         }), app.ui.settings.addSetting({
             id: "RiceRound.User.long_token",
@@ -118,41 +172,35 @@ app.registerExtension({
                 });
             }
         }), app.ui.settings.addSetting({
-            id: "RiceRound.Cloud.run_client",
-            name: "自启动云节点客户端",
-            type: "boolean",
-            defaultValue: !0,
-            tooltip: "没有任何云节点客户运行的话，则该用户云节点无法运行",
-            onChange: function(e) {
-                api.fetchApi("/riceround/set_run_client", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        run_client: e
-                    })
-                });
+            id: "RiceRound.Cloud.export",
+            name: "生成云机器配置",
+            type: () => {
+                const e = document.createElement("tr"), t = document.createElement("td"), n = document.createElement("input");
+                return n.type = "button", n.value = "导出", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
+                n.style.fontSize = "14px", n.style.cursor = "pointer", n.style.border = "1px solid #666", 
+                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onclick = async () => {
+                    exportTomlMessageBox("生成云机器配置");
+                }, t.appendChild(n), e.appendChild(t), e;
             }
         }), app.ui.settings.addSetting({
             id: "RiceRound.Advanced.setting",
             name: "模型列表存放位置，手动清理或安装高级节点",
             type: () => {
-                const e = document.createElement("tr"), t = document.createElement("td"), o = document.createElement("input");
-                return o.type = "button", o.value = "打开文件夹", o.style.borderRadius = "8px", o.style.padding = "8px 16px", 
-                o.style.fontSize = "14px", o.style.cursor = "pointer", o.style.border = "1px solid #666", 
-                o.style.backgroundColor = "#444", o.style.color = "#fff", o.onmouseover = () => {
-                    o.style.backgroundColor = "#555";
-                }, o.onmouseout = () => {
-                    o.style.backgroundColor = "#444";
-                }, o.onclick = () => {
-                    api.fetchApi("/riceround/open_selector_list_folder", {
+                const e = document.createElement("tr"), t = document.createElement("td"), n = document.createElement("input");
+                return n.type = "button", n.value = "打开文件夹", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
+                n.style.fontSize = "14px", n.style.cursor = "pointer", n.style.border = "1px solid #666", 
+                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onmouseover = () => {
+                    n.style.backgroundColor = "#555";
+                }, n.onmouseout = () => {
+                    n.style.backgroundColor = "#444";
+                }, n.onclick = () => {
+                    api.fetchApi("/riceround/open_folder?id=2", {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json"
                         }
                     });
-                }, t.appendChild(o), e.appendChild(t), e;
+                }, t.appendChild(n), e.appendChild(t), e;
             }
         });
     }

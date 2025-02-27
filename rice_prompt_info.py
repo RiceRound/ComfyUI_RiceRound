@@ -102,13 +102,6 @@ class RicePromptInfo:
     def get_auto_publish(self):
         return self.auto_publish
 
-    def set_run_client(self, run_client):
-        self.run_client = run_client
-        self._write_config_bool("Settings", "run_client", run_client)
-
-    def get_run_client(self):
-        return self.run_client
-
     def set_wait_time(self, wait_time):
         self.wait_time = wait_time
         self._write_config_int("Settings", "wait_time", wait_time)
@@ -231,29 +224,74 @@ class RiceEnvConfig:
             return ""
         return " ".join(filtered_add_cmd)
 
-    def read_env(self):
+    def _get_python_path(self):
+        "获取Python可执行文件路径，并进行容错处理"
         try:
-            python_path = sys.executable.replace("\\", "/")
-            working_directory = os.getcwd().replace("\\", "/")
-            cmd_args = " ".join(sys.argv[1:])
-            add_cmd = self.filter_add_cmd(cmd_args).strip()
-            script_name = sys.argv[0].replace("\\", "/")
-            if working_directory in script_name:
-                script_name = script_name.replace(working_directory, "").lstrip("/")
-            python_path = python_path.strip("\"'")
-            working_directory = working_directory.strip("\"'")
-            script_name = script_name.strip("\"'")
-            return {
-                "PythonPath": python_path,
-                "WorkingDirectory": working_directory,
-                "AddCmd": add_cmd,
-                "ScriptName": script_name,
-            }
+            return sys.executable.replace("\\", "/").strip("\"'")
         except Exception as e:
-            print(f"Error reading environment: {str(e)}")
-            return {
-                "PythonPath": "",
-                "WorkingDirectory": "",
-                "AddCmd": "",
-                "ScriptName": "",
-            }
+            print(f"Error getting Python path: {e}")
+            return ""
+
+    def _get_working_directory(self):
+        "获取工作目录，优先使用脚本所在目录，查找custom_nodes目录"
+        try:
+            script_abs_path = os.path.abspath(sys.argv[0]).replace("\\", "/")
+            script_dir = os.path.dirname(script_abs_path)
+            working_directory = script_dir
+            custom_nodes_pattern = re.compile(
+                "[/\\\\]custom_nodes[/\\\\]", re.IGNORECASE
+            )
+            match = custom_nodes_pattern.search(script_dir)
+            if match:
+                custom_nodes_pos = match.start()
+                potential_parent_dir = script_dir[:custom_nodes_pos]
+                custom_nodes_dir = os.path.join(potential_parent_dir, "custom_nodes")
+                if os.path.isdir(custom_nodes_dir) or os.path.isdir(
+                    os.path.join(potential_parent_dir, "Custom_Nodes")
+                ):
+                    working_directory = potential_parent_dir
+            return working_directory.strip("\"'")
+        except Exception as e:
+            print(f"Error getting working directory: {e}")
+            try:
+                return os.getcwd().replace("\\", "/").strip("\"'")
+            except:
+                return ""
+
+    def _get_add_cmd(self):
+        "获取并过滤命令行参数"
+        try:
+            cmd_args = " ".join(sys.argv[1:])
+            return self.filter_add_cmd(cmd_args).strip()
+        except Exception as e:
+            print(f"Error getting command arguments: {e}")
+            return ""
+
+    def _get_script_name(self):
+        "获取脚本名称，提取.py文件名"
+        try:
+            py_file_pattern = re.compile("[/\\\\]([^/\\\\]+\\.py)", re.IGNORECASE)
+            match = py_file_pattern.search(sys.argv[0])
+            if match:
+                return match.group(1)
+            basename = os.path.basename(sys.argv[0]).replace("\\", "/").strip("\"'")
+            if re.search("\\.py$", basename, re.IGNORECASE):
+                return basename
+            else:
+                return "main.py"
+        except Exception as e:
+            print(f"Error getting script name: {e}")
+            return "main.py"
+
+    def read_env(self):
+        "获取环境信息，每个变量单独获取并容错"
+        python_path = self._get_python_path()
+        working_directory = self._get_working_directory()
+        add_cmd = self._get_add_cmd()
+        script_name = self._get_script_name()
+        return {
+            "PythonPath": python_path,
+            "WorkingDirectory": working_directory,
+            "AddCmd": add_cmd,
+            "ScriptName": script_name,
+        }

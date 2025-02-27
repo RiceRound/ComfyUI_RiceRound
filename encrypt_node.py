@@ -128,22 +128,34 @@ class RiceRoundEncryptNode:
                     )
                 return {}
             else:
-                publish.publish(
+                publish_result = publish.publish(
                     user_token,
                     template_id,
                     project_name,
                     preview_path,
                     os.path.join(publish_folder, f"{template_id}.bin"),
                 )
-        if RicePromptInfo().get_run_client():
+                if not publish_result:
+                    PromptServer.instance.send_sync(
+                        "riceround_toast", {"content": "发布失败，请检查发布步骤", "type": "error"}
+                    )
+                    return {}
+                else:
+                    PromptServer.instance.send_sync(
+                        "riceround_toast",
+                        {"content": "发布成功，请启动client", "type": "success"},
+                    )
+        try:
             from .rice_install_client import RiceInstallClient
 
-            error_code, error_msg = RiceInstallClient().run_client()
-            if error_code != RiceRoundErrorDef.SUCCESS:
-                PromptServer.instance.send_sync(
-                    "riceround_toast",
-                    {"content": "加密节点发布完成，但无法启动client，建议官网重新安装", "type": "error"},
-                )
+            is_installed = RiceInstallClient().is_client_installed()
+            is_running = RiceInstallClient().is_client_running()
+            PromptServer.instance.send_sync(
+                "riceround_client_install_dialog",
+                {"is_installed": is_installed, "is_running": is_running},
+            )
+        except Exception as e:
+            logging.error(f"repair client error: {e}")
         logging.info(f"Debug - results length: {len(results)}, images: {results}")
         return {"ui": {"images": results}}
 

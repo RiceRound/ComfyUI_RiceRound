@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import requests
+from .utils import generate_random_string
 from .rice_prompt_info import RicePromptInfo
 from .rice_url_config import RiceUrlConfig, user_upload_imagefile
 from server import PromptServer
@@ -23,27 +24,28 @@ class Publish:
         error_code, error_msg = self._check_workflow(user_token, template_id)
         if error_code == 1:
             overwrite = True
-            auto_overwrite = RicePromptInfo().get_auto_overwrite()
+            auto_overwrite = False
+            print("总是有人覆盖导致工作流丢失故障，先关闭这个功能，必须弹窗提示！后继看看能不能尽量智能检测")
             if not auto_overwrite:
                 json_content = {
-                    "title": "已经存在相同template_id的数据，是否覆盖？注意，如果接口做了调整，覆盖后老用户将无法使用！",
+                    "title": "已经存在相同template_id的数据，是否覆盖？注意，如果不是同一个工作流相互覆盖，会造成严重后果！",
                     "icon": "info",
-                    "confirmButtonText": "覆盖",
+                    "confirmButtonText": "覆盖后手动调整template",
                     "cancelButtonText": "取消",
                     "showCancelButton": True,
                     "timer": 50000,
                 }
+                message_id = generate_random_string(10)
                 PromptServer.instance.send_sync(
-                    "riceround_dialog",
-                    {"json_content": json.dumps(json_content), "id": template_id},
+                    "riceround_server_dialog",
+                    {"json_content": json.dumps(json_content), "id": message_id},
                 )
-                msg_result = MessageHolder.waitForMessage(template_id, timeout=60000)
-                try:
-                    result_code = int(msg_result)
-                except ValueError:
-                    print("riceround upload cancel: Invalid response format")
-                    return False
-                if result_code != 1:
+                msg_result = MessageHolder.waitForMessage(message_id, timeout=60000)
+                if isinstance(msg_result, str):
+                    result = json.loads(msg_result)
+                else:
+                    result = msg_result
+                if result.get("confirmed", 0) != 1:
                     print("riceround upload cancel: User rejected overwrite")
                     return False
         elif error_code != 0:

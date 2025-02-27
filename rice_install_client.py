@@ -1,13 +1,7 @@
 import os
-import shutil
 import sys
 import tempfile
-import time
-import portalocker
 import requests
-import tomlkit
-from tomlkit import comment, table, dumps
-import subprocess
 from .rice_def import RiceRoundErrorDef
 from .rice_url_config import RiceUrlConfig
 from .auth_unit import AuthUnit
@@ -42,6 +36,8 @@ class RiceInstallClient:
         if not os.path.exists(lock_path):
             return False
         try:
+            import portalocker
+
             with open(lock_path, "w") as f:
                 portalocker.lock(f, portalocker.LOCK_EX | portalocker.LOCK_NB)
                 portalocker.unlock(f)
@@ -64,6 +60,9 @@ class RiceInstallClient:
         if not client_toml_path.exists():
             return False
         try:
+            import tomlkit
+            from tomlkit import comment, table, dumps
+
             env_config = RiceEnvConfig().read_env()
             if not env_config:
                 print("Error: Failed to read environment config")
@@ -117,76 +116,69 @@ class RiceInstallClient:
             print(f"Error repairing client.toml: {str(e)}")
             return False
 
-    def install_client_toml(self, comfyui_port, local_server_port, secret_token):
-        env_config = RiceEnvConfig().read_env()
-        os.makedirs(self.app_path, exist_ok=True)
-        config = tomlkit.document()
-        config.add(comment("日志级别设置"))
-        config.add(comment("可选值: 'debug', 'info', 'warn', 'error'"))
-        config["LogLevel"] = "info"
-        config.add(comment("机器码，非常重要，用于登录鉴权"))
-        config.add(comment("在官网可以获取自己的机器码，普通用户也可以由管理员授予"))
-        config["SecretToken"] = secret_token
-        config.add(comment("本地服务端口"))
-        config.add(comment("用于本地服务端口，通常为 6608"))
-        config["Port"] = local_server_port
-        comfyui_table = table()
-        comfyui_table.add(comment("ComfyUI 监听的端口"))
-        comfyui_table.add(comment("端口号，默认为 6607"))
-        comfyui_table["Port"] = comfyui_port
-        comfyui_table.add(comment("Python 解释器路径"))
-        comfyui_table.add(comment("这里填写你安装的 Python 解释器路径，确保 Python 环境已经配置好"))
-        comfyui_table["PythonPath"] = str(env_config["PythonPath"])
-        comfyui_table.add(comment("ComfyUI 脚本的文件名"))
-        comfyui_table.add(comment("这里填写 ComfyUI 的启动脚本名，通常是 'main.py'"))
-        comfyui_table["ComfyuiScriptName"] = env_config["ScriptName"]
-        comfyui_table.add(comment("ComfyUI 工作目录"))
-        comfyui_table.add(comment("这里填写 ComfyUI 所在的目录路径"))
-        comfyui_table["WorkingDirectory"] = str(env_config["WorkingDirectory"])
-        comfyui_table.add(comment("环境命令，用于激活相关环境"))
-        comfyui_table.add(comment("例如可以填写 conda 环境的激活命令 conda activate comfyui"))
-        comfyui_table["EnvCmd"] = ""
-        comfyui_table.add(comment("启动时附加的命令行参数"))
-        comfyui_table.add(comment("可根据需要添加，常用的如 '--disable-metadata'"))
-        comfyui_table["AddCmd"] = env_config["AddCmd"]
-        config["ComfyUI"] = comfyui_table
+    def _generate_toml_config(
+        self, secret_token, comfyui_port=6607, local_server_port=6608
+    ):
+        "Internal function to generate TOML configuration.\n        \n        Args:\n            secret_token: The authentication token\n            comfyui_port: Port for ComfyUI, defaults to 6607\n            local_server_port: Port for local server, defaults to 6608\n            \n        Returns:\n            str: The generated TOML content\n"
         try:
+            import tomlkit
+            from tomlkit import comment, table, dumps
+
+            env_config = RiceEnvConfig().read_env()
+            config = tomlkit.document()
+            config.add(comment("日志级别设置"))
+            config.add(comment("可选值: 'debug', 'info', 'warn', 'error'"))
+            config["LogLevel"] = "info"
+            config.add(comment("机器码，非常重要，用于登录鉴权"))
+            config.add(comment("在官网可以获取自己的机器码，普通用户也可以由管理员授予"))
+            config["SecretToken"] = secret_token
+            config.add(comment("本地服务端口"))
+            config.add(comment("用于本地服务端口，通常为 6608"))
+            config["Port"] = local_server_port
+            comfyui_table = table()
+            comfyui_table.add(comment("ComfyUI 监听的端口"))
+            comfyui_table.add(comment("端口号，默认为 6607"))
+            comfyui_table["Port"] = comfyui_port
+            comfyui_table.add(comment("Python 解释器路径"))
+            comfyui_table.add(comment("这里填写你安装的 Python 解释器路径，确保 Python 环境已经配置好"))
+            comfyui_table["PythonPath"] = str(env_config["PythonPath"])
+            comfyui_table.add(comment("ComfyUI 脚本的文件名"))
+            comfyui_table.add(comment("这里填写 ComfyUI 的启动脚本名，通常是 'main.py'"))
+            comfyui_table["ComfyuiScriptName"] = env_config["ScriptName"]
+            comfyui_table.add(comment("ComfyUI 工作目录"))
+            comfyui_table.add(comment("这里填写 ComfyUI 所在的目录路径"))
+            comfyui_table["WorkingDirectory"] = str(env_config["WorkingDirectory"])
+            comfyui_table.add(comment("环境命令，用于激活相关环境"))
+            comfyui_table.add(comment("例如可以填写 conda 环境的激活命令 conda activate comfyui"))
+            comfyui_table["EnvCmd"] = ""
+            comfyui_table.add(comment("启动时附加的命令行参数"))
+            comfyui_table.add(comment("可根据需要添加，常用的如 '--disable-metadata'"))
+            comfyui_table["AddCmd"] = env_config["AddCmd"]
+            config["ComfyUI"] = comfyui_table
+            return dumps(config)
+        except Exception as e:
+            print(f"Error generating TOML content: {str(e)}")
+            raise e
+
+    def install_client_toml(self, comfyui_port, local_server_port, secret_token):
+        try:
+            os.makedirs(self.app_path, exist_ok=True)
+            toml_content = self._generate_toml_config(
+                secret_token, comfyui_port, local_server_port
+            )
             client_toml_path = self.app_path / "client.toml"
             with open(client_toml_path, "w", encoding="utf-8") as f:
-                f.write(dumps(config))
+                f.write(toml_content)
             return True
         except Exception as e:
             print(f"Error writing client.toml: {str(e)}")
             return False
 
-    def install_client_executable(self):
-        try:
-            souce_executable_path = os.path.join(
-                self.current_path, self.source_executable_filename
-            )
-            target_executable_path = os.path.join(
-                self.app_path, self.executable_filename
-            )
-            if os.path.exists(target_executable_path):
-                return True
-            if not os.path.exists(souce_executable_path):
-                raise FileNotFoundError(
-                    f"Executable file not found: {souce_executable_path}"
-                )
-            shutil.copyfile(souce_executable_path, target_executable_path)
-            if sys.platform == "linux":
-                os.chmod(target_executable_path, 493)
-            return True
-        except Exception as e:
-            print(f"Error installing client executable: {str(e)}")
-            return False
+    def export_toml(self, secret_token):
+        "Generate and return TOML configuration content."
+        return self._generate_toml_config(secret_token)
 
-    def run_client(self, comfyui_port=6607, local_server_port=6608):
-        if self.is_client_running():
-            return RiceRoundErrorDef.SUCCESS, ""
-        executable_path = self.app_path / self.executable_filename
-        if not executable_path.exists():
-            self.install_client_executable()
+    def auto_fix_toml(self, comfyui_port=6607, local_server_port=8689):
         toml_path = self.app_path / "client.toml"
         if not toml_path.exists():
             secret_token, error_message, error_code = self.get_secret_token()
@@ -203,48 +195,6 @@ class RiceInstallClient:
                 return RiceRoundErrorDef.ERROR_INSTALL_CLIENT_TOML, "安装client.toml失败"
         else:
             self.repair_client_toml(toml_path)
-        error_code, error_message = self.start_client()
-        return error_code, error_message
-
-    def start_client(self):
-        executable_path = self.app_path / self.executable_filename
-        if not executable_path.exists():
-            return RiceRoundErrorDef.ERROR_EXECUTABLE_NOT_FOUND, "找不到可执行文件"
-        try:
-            if sys.platform == "win32":
-                flags = (
-                    subprocess.DETACHED_PROCESS
-                    | subprocess.CREATE_NEW_PROCESS_GROUP
-                    | subprocess.CREATE_BREAKAWAY_FROM_JOB
-                )
-                proc = subprocess.Popen(
-                    str(executable_path),
-                    shell=True,
-                    start_new_session=True,
-                    creationflags=flags,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    close_fds=True,
-                )
-            else:
-                proc = subprocess.Popen(
-                    str(executable_path),
-                    shell=False,
-                    start_new_session=True,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    close_fds=True,
-                )
-            time.sleep(10)
-            if proc.poll() is not None:
-                return RiceRoundErrorDef.ERROR_PROCESS_EXIT, "程序启动后异常退出"
-            else:
-                return RiceRoundErrorDef.SUCCESS, ""
-        except Exception as e:
-            print(f"程序启动异常: {str(e)}")
-            return RiceRoundErrorDef.ERROR_START_EXCEPTION, str(e)
 
     def get_secret_token(self):
         token, error_message, error_code = AuthUnit().get_user_token()
@@ -276,37 +226,3 @@ class RiceInstallClient:
             return secret_token, "", 0
         except Exception as e:
             return None, "获取密钥失败" + str(e), RiceRoundErrorDef.ERROR_SECRET_TOKEN
-
-    def restart_client(self):
-        executable_path = self.app_path / self.executable_filename
-        if not executable_path.exists():
-            return RiceRoundErrorDef.ERROR_EXECUTABLE_NOT_FOUND, "找不到可执行文件"
-        try:
-            import subprocess
-
-            if sys.platform == "win32":
-                flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW
-                proc = subprocess.Popen(
-                    [str(executable_path), "--reload"],
-                    shell=False,
-                    creationflags=flags,
-                    start_new_session=True,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    close_fds=True,
-                )
-            else:
-                proc = subprocess.Popen(
-                    [str(executable_path), "--reload"],
-                    shell=False,
-                    start_new_session=True,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    close_fds=True,
-                )
-            return RiceRoundErrorDef.SUCCESS, ""
-        except Exception as e:
-            print(f"重启程序异常: {str(e)}")
-            return RiceRoundErrorDef.ERROR_RESTART_EXCEPTION, str(e)

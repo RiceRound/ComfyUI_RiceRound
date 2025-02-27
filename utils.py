@@ -115,7 +115,7 @@ def get_machine_id():
         return ""
 
 
-def restart():
+def restart_comfyui():
     try:
         sys.stdout.close_log()
     except Exception:

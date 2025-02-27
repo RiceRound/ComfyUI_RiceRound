@@ -5,7 +5,7 @@ import sys
 from urllib.parse import unquote
 import asyncio
 import aiohttp
-from .utils import restart
+from .utils import get_local_app_setting_path, restart_comfyui
 from server import PromptServer
 from .input_node import *
 from .output_node import *
@@ -143,27 +143,35 @@ async def set_node_additional_info(request):
     return web.json_response({}, status=200)
 
 
-@routes.get("/riceround/open_selector_list_folder")
-async def open_selector_list_folder(request):
+@routes.get("/riceround/open_folder")
+async def open_folder(request):
     if request.remote not in ("127.0.0.1", "::1"):
         return web.json_response({"error": "Unauthorized access"}, status=403)
-    choice_server_folder = RicePromptInfo().get_choice_server_folder()
-    if not choice_server_folder.exists():
-        return web.json_response({"error": "Folder does not exist"}, status=404)
-    system = platform.system()
-    try:
-        if system == "Windows":
-            os.startfile(choice_server_folder)
-        else:
-            import subprocess
-
-            if system == "Darwin":
-                subprocess.run(["open", choice_server_folder])
+    id = request.query.get("id", "")
+    folder = None
+    if id == "1":
+        folder = get_local_app_setting_path()
+        if not folder.exists():
+            return web.json_response({"error": "Folder does not exist"}, status=404)
+    elif id == "2":
+        folder = RicePromptInfo().get_choice_server_folder()
+        if not folder.exists():
+            return web.json_response({"error": "Folder does not exist"}, status=404)
+    if folder:
+        system = platform.system()
+        try:
+            if system == "Windows":
+                os.startfile(folder)
             else:
-                subprocess.run(["xdg-open", choice_server_folder])
-        return web.json_response({"status": "success"}, status=200)
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+                import subprocess
+
+                if system == "Darwin":
+                    subprocess.run(["open", folder])
+                else:
+                    subprocess.run(["xdg-open", folder])
+            return web.json_response({"status": "success"}, status=200)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
 
 
 @routes.get("/riceround/get_current_env_config")
@@ -188,14 +196,6 @@ async def set_auto_overwrite(request):
     return web.json_response({"status": "success"}, status=200)
 
 
-@routes.post("/riceround/set_run_client")
-async def set_run_client(request):
-    data = await request.json()
-    run_client = data.get("run_client")
-    RicePromptInfo().set_run_client(run_client)
-    return web.json_response({"status": "success"}, status=200)
-
-
 @routes.post("/riceround/set_auto_publish")
 async def set_auto_publish(request):
     data = await request.json()
@@ -216,7 +216,7 @@ async def set_wait_time(request):
 async def install_choice_node(request):
     async def delayed_restart():
         await asyncio.sleep(3)
-        restart()
+        restart_comfyui()
 
     data = await request.json()
     template_id = data.get("template_id")
@@ -238,6 +238,44 @@ async def install_choice_node(request):
     return aiohttp.web.json_response(
         {"status": "failed", "message": "Installation failed"}, status=400
     )
+
+
+@routes.post("/riceround/export_toml")
+async def export_toml(request):
+    data = await request.json()
+    secret_token = data.get("secret_token")
+    if not secret_token:
+        return aiohttp.web.json_response(
+            {"status": "failed", "message": "secret_token is required"}, status=400
+        )
+    try:
+        from .rice_install_client import RiceInstallClient
+
+        toml_content = RiceInstallClient().export_toml(secret_token)
+        return aiohttp.web.Response(
+            body=toml_content.encode("utf-8"),
+            headers={
+                "Content-Type": "application/toml",
+                "Content-Disposition": 'attachment; filename="client.toml"',
+            },
+        )
+    except Exception as e:
+        return aiohttp.web.json_response(
+            {"status": "failed", "message": str(e)}, status=400
+        )
+
+
+@routes.get("/riceround/fix_toml")
+async def fix_toml(request):
+    try:
+        from .rice_install_client import RiceInstallClient
+
+        RiceInstallClient().auto_fix_toml()
+        return aiohttp.web.json_response({"status": "success"}, status=200)
+    except Exception as e:
+        return aiohttp.web.json_response(
+            {"status": "failed", "message": str(e)}, status=400
+        )
 
 
 is_on_riceround = False
@@ -262,11 +300,3 @@ async def check_login_status(request, handler):
 
 if is_on_riceround == True:
     PromptServer.instance.app.middlewares.append(check_login_status)
-if not is_on_riceround:
-    try:
-        if RicePromptInfo().get_run_client():
-            from .rice_install_client import RiceInstallClient
-
-            RiceInstallClient().run_client()
-    except Exception as e:
-        print(f"Error running client: {e}")

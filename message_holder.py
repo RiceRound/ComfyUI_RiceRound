@@ -11,7 +11,6 @@ class Cancelled(Exception):
 
 
 class MessageHolder:
-    stash = {}
     messages = {}
     cancelled = False
 
@@ -22,7 +21,6 @@ class MessageHolder:
             cls.cancelled = True
         elif message == "__start__":
             cls.messages = {}
-            cls.stash = {}
             cls.cancelled = False
         else:
             cls.messages[str(id)] = message
@@ -31,8 +29,9 @@ class MessageHolder:
     def waitForMessage(cls, id, period=0.1, timeout=60):
         sid = str(id)
         cls.messages.clear()
+        cls.cancelled = False
         start_time = time.time()
-        while not sid in cls.messages and not "-1" in cls.messages:
+        while sid not in cls.messages:
             if cls.cancelled:
                 cls.cancelled = False
                 raise Cancelled()
@@ -42,8 +41,7 @@ class MessageHolder:
         if cls.cancelled:
             cls.cancelled = False
             raise Cancelled()
-        message = cls.messages.pop(str(id), None) or cls.messages.pop("-1")
-        return message.strip()
+        return cls.messages.pop(sid)
 
 
 routes = PromptServer.instance.routes
@@ -51,6 +49,6 @@ routes = PromptServer.instance.routes
 
 @routes.post("/riceround/message")
 async def message_handler(request):
-    post = await request.post()
-    MessageHolder.addMessage(post.get("id"), post.get("message"))
+    data = await request.json()
+    MessageHolder.addMessage(data["id"], data["message"])
     return web.json_response({})
