@@ -86,7 +86,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RiceRoundStrToIntNode": "RiceRound Str To Int",
     "RiceRoundStrToFloatNode": "RiceRound Str To Float",
     "RiceRoundStrToBooleanNode": "RiceRound Str To Boolean",
-    "RiceRoundDecryptNode": "Decrypt",
+    "RiceRoundDecryptNode": "RiceRound Cloud",
     "RiceRoundOutputImageBridgeNode": "Output Image Bridge",
     "RiceRoundImageUrlNode": "Image URL",
     "RiceRoundUploadImageNode": "Upload Image",
@@ -95,7 +95,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RiceRoundOutputFloatNode": "Output Float",
     "RiceRoundOutputBooleanNode": "Output Boolean",
     "RiceRoundOutputTextNode": "Output Text",
-    "RiceRoundEncryptNode": "Encrypt",
+    "RiceRoundEncryptNode": "RiceRound Publish",
     "RiceRoundOutputImageNode": "Output Image",
     **{name: cls["display_name"] for (name, cls) in dynamic_choice_nodes.items()},
 }

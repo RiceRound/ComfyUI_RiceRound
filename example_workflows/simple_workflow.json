@@ -1,0 +1,180 @@
+{
+    "last_node_id": 14,
+    "last_link_id": 12,
+    "nodes": [
+        {
+            "id": 11,
+            "type": "RiceRoundInputTextNode",
+            "pos": [
+                -192.8919677734375,
+                -94.64482116699219
+            ],
+            "size": [
+                400,
+                200
+            ],
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "STRING",
+                    "type": "STRING",
+                    "links": [
+                        10
+                    ],
+                    "slot_index": 0
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "RiceRoundInputTextNode"
+            },
+            "widgets_values": [
+                "1 dog"
+            ]
+        },
+        {
+            "id": 12,
+            "type": "RiceRoundSimpleChoiceNode",
+            "pos": [
+                -410.595458984375,
+                246.42388916015625
+            ],
+            "size": [
+                315,
+                82
+            ],
+            "flags": {},
+            "order": 2,
+            "mode": 0,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "value",
+                    "type": "COMBO",
+                    "links": [
+                        11
+                    ],
+                    "slot_index": 0
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "RiceRoundSimpleChoiceNode"
+            },
+            "widgets_values": [
+                "ckpt_name",
+                "1.5\\dreamshaper_8_v8.safetensors"
+            ]
+        },
+        {
+            "id": 14,
+            "type": "RiceRoundDecryptNode",
+            "pos": [
+                420,
+                0
+            ],
+            "size": [
+                500,
+                150
+            ],
+            "flags": {},
+            "mode": 0,
+            "order": 20,
+            "inputs": [
+                {
+                    "name": "input_anything (11)",
+                    "type": "*",
+                    "link": 10,
+                    "label": "input_anything (11)",
+                    "shape": 7
+                },
+                {
+                    "name": "input_anything1 (12)",
+                    "type": "*",
+                    "link": 11,
+                    "label": "input_anything1 (12)"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "IMAGE",
+                    "type": "IMAGE",
+                    "links": [],
+                    "label": "IMAGE",
+                    "slot_index": 0
+                }
+            ],
+            "properties": {
+                "Node name for S&R": "RiceRoundDecryptNode"
+            },
+            "widgets_values": [
+                "7bd02cb89b0fdeb142dcadc58dcc7ba9",
+                735127949069071,
+                "randomize"
+            ]
+        }
+    ],
+    "links": [
+        [
+            10,
+            11,
+            0,
+            14,
+            0,
+            "STRING"
+        ],
+        [
+            11,
+            12,
+            0,
+            14,
+            1,
+            "STRING"
+        ]
+    ],
+    "groups": [],
+    "config": {},
+    "extra": {
+        "ds": {
+            "scale": 0.9646149645000013,
+            "offset": [
+                582.684842346158,
+                218.46366128891333
+            ]
+        },
+        "node_versions": {
+            "comfy-core": "0.3.12",
+            "ComfyUI_RiceRound": "d3b0a8353c18e926eaaeb27f72a72c46d8b13caa"
+        },
+        "choice_node_map": {
+            "12": [
+                "1.5\\dreamshaper_8_v8.safetensors",
+                "1.5\\majicmixRealistic_v7.safetensors",
+                "1.5\\儿童摄影｜WFChild_Inpainting v1.0.safetensors",
+                "1.5\\林鹤-人像光影摄影极限写实真实感大模型_V2.6.1.safetensors",
+                "1.5\\绪儿-写实 帅哥美女模型_东方v4.safetensors",
+                "Flux\\F.1-Wedding Photography Anss_F.1-V1.safetensors",
+                "Flux\\Flux.1-绝美风景摄影MAX_v1.0.safetensors",
+                "Flux\\flux1-dev-bnb-nf4-v2.safetensors",
+                "Flux\\flux1-dev.safetensors",
+                "Flux\\产品写实｜F.1简朴归真-电商全能_商业视觉KV海报产品设计_V1.safetensors",
+                "Flux\\绘梦光影魔术师 F.1 _全能写实_商业电商产品广告摄影_光影全能魔术师_V1.safetensors",
+                "Flux\\美丽深邃的亚细亚_预览版.safetensors",
+                "SUPIR-v0Q.ckpt",
+                "XL\\Albedobase_SDXLHyper_v1.safetensors",
+                "XL\\SDXL古风汉服MAX_v3.0.safetensors",
+                "XL\\XL_realvisxlV50_v40Bakedvae.safetensors",
+                "XL\\protovisionXLHighFidelity3D_beta0520Bakedvae.safetensors",
+                "XL\\sd_xl_base_1.0.safetensors",
+                "XL\\tqingXLV15Turbolcm_v15.safetensors",
+                "XL\\万享XL_超写实摄影V8.4_V8.4.safetensors",
+                "XL\\万享XL进阶_写实版_V7.0.safetensors",
+                "kolors\\UNIT-可丽（Kolors Girl）女装底模中英文加速版_可图KOLORSGirl.safetensors",
+                "kolors\\kolors-32-diffusion_pytorch_kolors-32-diffu.safetensors",
+                "kolors\\可图kolors-base-1.0-vae-fp16_kolors-base-1.0.safetensors"
+            ]
+        }
+    },
+    "version": 0.4
+}
