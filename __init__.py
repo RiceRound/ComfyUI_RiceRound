@@ -162,13 +162,6 @@ async def open_folder(request):
         try:
             if system == "Windows":
                 os.startfile(folder)
-            else:
-                import subprocess
-
-                if system == "Darwin":
-                    subprocess.run(["open", folder])
-                else:
-                    subprocess.run(["xdg-open", folder])
             return web.json_response({"status": "success"}, status=200)
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
