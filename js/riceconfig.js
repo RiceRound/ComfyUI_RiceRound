@@ -61,7 +61,7 @@ async function exportTomlMessageBox(e) {
                     } else ElementPlus.ElMessage.warning("请输入机器码");
                 },
                 openHelp: () => {
-                    window.open("https://help.riceround.online/", "_blank");
+                    window.open("https://help.riceround.online/#/install?id=client-node-deployment", "_blank");
                 }
             };
         }
@@ -69,23 +69,30 @@ async function exportTomlMessageBox(e) {
     i.use(ElementPlus), i.mount(t);
 }
 
-async function set_exclusive_user(e) {
-    e ? localStorage.setItem("RiceRound.Cloud.exclusive", e) : localStorage.removeItem("RiceRound.Cloud.exclusive");
-    200 != (await api.fetchApi("/riceround/set_exclusive_user", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            exclusive_user: e
-        })
-    })).status && showToast("设置专属用户客户ID失败", "error");
-}
-
 app.registerExtension({
     name: "riceround.config",
     async setup() {
         app.ui.settings.addSetting({
+            id: "RiceRound.Advanced.setting",
+            name: "模型列表存放位置，手动清理或安装高级节点",
+            type: () => {
+                const e = document.createElement("tr"), t = document.createElement("td"), n = document.createElement("input");
+                return n.type = "button", n.value = "打开文件夹", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
+                n.style.fontSize = "14px", n.style.cursor = "pointer", n.style.border = "1px solid #666", 
+                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onmouseover = () => {
+                    n.style.backgroundColor = "#555";
+                }, n.onmouseout = () => {
+                    n.style.backgroundColor = "#444";
+                }, n.onclick = () => {
+                    api.fetchApi("/riceround/open_folder?id=2", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    });
+                }, t.appendChild(n), e.appendChild(t), e;
+            }
+        }), app.ui.settings.addSetting({
             id: "RiceRound.User.logout",
             name: "登出当前用户",
             type: () => {
@@ -167,23 +174,21 @@ app.registerExtension({
                 }, t.appendChild(n), e.appendChild(t), e;
             }
         }), app.ui.settings.addSetting({
-            id: "RiceRound.Advanced.setting",
-            name: "模型列表存放位置，手动清理或安装高级节点",
+            id: "RiceRound.Cloud.fix_toml",
+            name: "修复本机ComfyUI环境配置",
+            tooltip: "注意请明确当前ComfyUI环境是否正常，修复后最好手动查看一下client.toml文件是否修复成功",
             type: () => {
                 const e = document.createElement("tr"), t = document.createElement("td"), n = document.createElement("input");
-                return n.type = "button", n.value = "打开文件夹", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
+                return n.type = "button", n.value = "修复", n.style.borderRadius = "8px", n.style.padding = "8px 16px", 
                 n.style.fontSize = "14px", n.style.cursor = "pointer", n.style.border = "1px solid #666", 
-                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onmouseover = () => {
-                    n.style.backgroundColor = "#555";
-                }, n.onmouseout = () => {
-                    n.style.backgroundColor = "#444";
-                }, n.onclick = () => {
-                    api.fetchApi("/riceround/open_folder?id=2", {
+                n.style.backgroundColor = "#444", n.style.color = "#fff", n.onclick = async () => {
+                    const e = await api.fetchApi("/riceround/fix_toml", {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json"
                         }
                     });
+                    200 == e.status ? showToast("修复成功") : showToast("修复失败 " + e?.message || "");
                 }, t.appendChild(n), e.appendChild(t), e;
             }
         });

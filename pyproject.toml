@@ -1,7 +1,7 @@
 [project]
 name = "comfyui_riceround"
 description = "RiceRound is an open-source project that migrates local AI workflows (built with ComfyUI) to the cloud, enabling distributed deployment. Creators can design and run workflows while monitoring progress and node status in real-time. The platform supports one-click cloud node generation and online page creation."
-version = "1.1.0"
+version = "1.1.1"
 license = {file = "LICENSE"}
 dependencies = ["aiohttp", "pyzipper", "websockets", "portalocker", "tomlkit"]
 

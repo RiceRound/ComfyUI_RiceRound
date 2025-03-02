@@ -80,7 +80,7 @@ async function showClientInstallMessageBox(e, t) {
         if (!t) {
             const e = await Swal.fire({
                 title: "Client未启动",
-                html: '本机Client似乎没有启动，这不影响发布，但发布后可能没有算力可用，可以点击<a href="https://help.riceround.online" target="_blank">这里</a>寻求帮助，也可以尝试修复本机配置或打开Client文件夹查看详情。',
+                html: '本机Client似乎没有启动，这不影响发布，但发布后可能没有算力可用，可以点击<a href="https://help.riceround.online/#/install?id=client-node-deployment" target="_blank">这里</a>寻求帮助，也可以尝试修复本机配置或打开Client文件夹查看详情。',
                 icon: "warning",
                 showCancelButton: !0,
                 showDenyButton: !0,
