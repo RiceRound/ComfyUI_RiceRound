@@ -215,7 +215,7 @@ async function waitForObject(e, t, o = 5e3) {
 
 export async function initDialogLib(e = !1) {
     if (!dialogLibHasLoaded) try {
-        const e = "https://unpkg.com/vue@3/dist/vue.global.js";
+        const e = "https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.js";
         await loadResource(e, ""), await waitForObject((() => window.Vue), "vue");
         const t = "https://cdn.jsdelivr.net/npm/element-plus", o = "https://cdn.jsdelivr.net/npm/element-plus/dist/index.css";
         if (await loadResource(t, o), await waitForObject((() => window.ElementPlus), "element-plus"), 
@@ -250,7 +250,7 @@ function changeWidgets(e, t, o, n) {
     "customtext" === t && (t = "text");
     const i = n.options;
     var a = e.widgets[1].value;
-    i?.values?.includes(a) || (a = n.value), "RiceRoundAdvancedChoiceNode" == e.comfyClass || "RiceRoundSimpleChoiceNode" == e.comfyClass ? changeWidget(e.widgets[1], t, a, i) : "RiceRoundIntNode" != e.comfyClass && "RiceRoundFloatNode" != e.comfyClass || 4 == e.widgets.length && (changeWidget(e.widgets[1], "number", a, i), 
+    i?.values?.includes(a) || (a = n.value), "RiceRoundAdvancedChoiceNode" == e.comfyClass || "RiceRoundSimpleChoiceNode" == e.comfyClass ? "combo" === t ? setupComboWidget(e.widgets[1], e, 1, i.values) : changeWidget(e.widgets[1], t, a, i) : "RiceRoundIntNode" != e.comfyClass && "RiceRoundFloatNode" != e.comfyClass || 4 == e.widgets.length && (changeWidget(e.widgets[1], "number", a, i), 
     changeWidget(e.widgets[2], "number", i?.min ?? 0, i), changeWidget(e.widgets[3], "number", i?.max ?? 100, i));
 }
 
@@ -335,20 +335,29 @@ api.addEventListener("riceround_login_dialog", (e => {
     }), send_onstart();
 }));
 
-let applySimpleChoiceNodeExtraLogicTimer = null;
+const nodeTimersMap = new Map;
+
+function setupComboWidget(e, t, o, n) {
+    e.type = "combo", e.options = {
+        values: n
+    }, n.includes(e.value) || (e.value = n[0]);
+    const i = t.id;
+    e.callback = function(e) {
+        const t = app.graph._nodes_by_id[i];
+        t?.widgets?.[o] && (t.widgets[o].value = e, t.setDirtyCanvas(!0));
+    };
+}
 
 function applySimpleChoiceNodeExtraLogic(e, t) {
-    applySimpleChoiceNodeExtraLogicTimer && clearTimeout(applySimpleChoiceNodeExtraLogicTimer), 
-    applySimpleChoiceNodeExtraLogicTimer = setTimeout((() => {
-        applySimpleChoiceNodeExtraLogicTimer = null;
+    if (!e?.id) return;
+    nodeTimersMap.has(e.id) && (clearTimeout(nodeTimersMap.get(e.id)), nodeTimersMap.delete(e.id));
+    const o = setTimeout((() => {
+        nodeTimersMap.delete(e.id);
         const o = t.graph.extra?.choice_node_map;
-        if (e && e.widgets && 2 === e.widgets.length && o && o[e.id]) {
-            const t = {
-                values: o[e.id]
-            };
-            changeWidget(e.widgets[1], "combo", e.widgets[1].value, t);
-        }
+        2 === e?.widgets?.length && o?.[e.id] && (setupComboWidget(e.widgets[1], e, 1, o[e.id]), 
+        e.setDirtyCanvas(!0));
     }), 200);
+    nodeTimersMap.set(e.id, o);
 }
 
 function adaptWidgetsToConnection(e) {
@@ -381,8 +390,11 @@ function setupParameterNode(e) {
     };
     const n = e.prototype.onConnectOutput;
     e.prototype.onConnectOutput = function(e, t, o, i, a) {
-        return !(!o.widget && !(o.type in [ "STRING", "COMBO", "combo" ])) && (!n || (result = n.apply(this, arguments), 
-        result));
+        if (!(o.widget || [ "STRING", "COMBO", "combo" ].includes(o.type) || o.type.includes("*"))) return !1;
+        if (n) {
+            return n.apply(this, arguments);
+        }
+        return !0;
     };
     const i = e.prototype.onConnectionsChange;
     e.prototype.onConnectionsChange = function(e, t, o, n, a) {

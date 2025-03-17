@@ -1,180 +1,584 @@
 {
-    "last_node_id": 14,
-    "last_link_id": 12,
-    "nodes": [
+  "last_node_id": 14,
+  "last_link_id": 13,
+  "nodes": [
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        413,
+        389
+      ],
+      "size": [
+        425.27801513671875,
+        180.6060791015625
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
         {
-            "id": 11,
-            "type": "RiceRoundInputTextNode",
-            "pos": [
-                -192.8919677734375,
-                -94.64482116699219
-            ],
-            "size": [
-                400,
-                200
-            ],
-            "flags": {},
-            "order": 1,
-            "mode": 0,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "STRING",
-                    "type": "STRING",
-                    "links": [
-                        10
-                    ],
-                    "slot_index": 0
-                }
-            ],
-            "properties": {
-                "Node name for S&R": "RiceRoundInputTextNode"
-            },
-            "widgets_values": [
-                "1 dog"
-            ]
-        },
-        {
-            "id": 12,
-            "type": "RiceRoundSimpleChoiceNode",
-            "pos": [
-                -410.595458984375,
-                246.42388916015625
-            ],
-            "size": [
-                315,
-                82
-            ],
-            "flags": {},
-            "order": 2,
-            "mode": 0,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "value",
-                    "type": "COMBO",
-                    "links": [
-                        11
-                    ],
-                    "slot_index": 0
-                }
-            ],
-            "properties": {
-                "Node name for S&R": "RiceRoundSimpleChoiceNode"
-            },
-            "widgets_values": [
-                "ckpt_name",
-                "1.5\\dreamshaper_8_v8.safetensors"
-            ]
-        },
-        {
-            "id": 14,
-            "type": "RiceRoundDecryptNode",
-            "pos": [
-                420,
-                0
-            ],
-            "size": [
-                500,
-                150
-            ],
-            "flags": {},
-            "mode": 0,
-            "order": 20,
-            "inputs": [
-                {
-                    "name": "input_anything (11)",
-                    "type": "*",
-                    "link": 10,
-                    "label": "input_anything (11)",
-                    "shape": 7
-                },
-                {
-                    "name": "input_anything1 (12)",
-                    "type": "*",
-                    "link": 11,
-                    "label": "input_anything1 (12)"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "IMAGE",
-                    "type": "IMAGE",
-                    "links": [],
-                    "label": "IMAGE",
-                    "slot_index": 0
-                }
-            ],
-            "properties": {
-                "Node name for S&R": "RiceRoundDecryptNode"
-            },
-            "widgets_values": [
-                "7bd02cb89b0fdeb142dcadc58dcc7ba9",
-                735127949069071,
-                "randomize"
-            ]
+          "name": "clip",
+          "label": "CLIP",
+          "type": "CLIP",
+          "link": 5
         }
-    ],
-    "links": [
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "label": "条件",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "text, watermark",
         [
-            10,
-            11,
-            0,
-            14,
-            0,
-            "STRING"
-        ],
-        [
-            11,
-            12,
-            0,
-            14,
-            1,
-            "STRING"
+          false,
+          true
         ]
-    ],
-    "groups": [],
-    "config": {},
-    "extra": {
-        "ds": {
-            "scale": 0.9646149645000013,
-            "offset": [
-                582.684842346158,
-                218.46366128891333
-            ]
-        },
-        "node_versions": {
-            "comfy-core": "0.3.12",
-            "ComfyUI_RiceRound": "d3b0a8353c18e926eaaeb27f72a72c46d8b13caa"
-        },
-        "choice_node_map": {
-            "12": [
-                "1.5\\dreamshaper_8_v8.safetensors",
-                "1.5\\majicmixRealistic_v7.safetensors",
-                "1.5\\儿童摄影｜WFChild_Inpainting v1.0.safetensors",
-                "1.5\\林鹤-人像光影摄影极限写实真实感大模型_V2.6.1.safetensors",
-                "1.5\\绪儿-写实 帅哥美女模型_东方v4.safetensors",
-                "Flux\\F.1-Wedding Photography Anss_F.1-V1.safetensors",
-                "Flux\\Flux.1-绝美风景摄影MAX_v1.0.safetensors",
-                "Flux\\flux1-dev-bnb-nf4-v2.safetensors",
-                "Flux\\flux1-dev.safetensors",
-                "Flux\\产品写实｜F.1简朴归真-电商全能_商业视觉KV海报产品设计_V1.safetensors",
-                "Flux\\绘梦光影魔术师 F.1 _全能写实_商业电商产品广告摄影_光影全能魔术师_V1.safetensors",
-                "Flux\\美丽深邃的亚细亚_预览版.safetensors",
-                "SUPIR-v0Q.ckpt",
-                "XL\\Albedobase_SDXLHyper_v1.safetensors",
-                "XL\\SDXL古风汉服MAX_v3.0.safetensors",
-                "XL\\XL_realvisxlV50_v40Bakedvae.safetensors",
-                "XL\\protovisionXLHighFidelity3D_beta0520Bakedvae.safetensors",
-                "XL\\sd_xl_base_1.0.safetensors",
-                "XL\\tqingXLV15Turbolcm_v15.safetensors",
-                "XL\\万享XL_超写实摄影V8.4_V8.4.safetensors",
-                "XL\\万享XL进阶_写实版_V7.0.safetensors",
-                "kolors\\UNIT-可丽（Kolors Girl）女装底模中英文加速版_可图KOLORSGirl.safetensors",
-                "kolors\\kolors-32-diffusion_pytorch_kolors-32-diffu.safetensors",
-                "kolors\\可图kolors-base-1.0-vae-fp16_kolors-base-1.0.safetensors"
-            ]
-        }
+      ]
     },
-    "version": 0.4
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [
+        863,
+        186
+      ],
+      "size": [
+        315,
+        474
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "label": "模型",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "positive",
+          "label": "正面条件",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "name": "negative",
+          "label": "负面条件",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "latent_image",
+          "label": "Latent",
+          "type": "LATENT",
+          "link": 2
+        },
+        {
+          "name": "seed",
+          "label": "随机种",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "label": "Latent",
+          "type": "LATENT",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        53308676468181,
+        "randomize",
+        20,
+        8,
+        "euler",
+        "normal",
+        1
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        415,
+        186
+      ],
+      "size": [
+        422.84503173828125,
+        164.31304931640625
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "label": "CLIP",
+          "type": "CLIP",
+          "link": 3
+        },
+        {
+          "name": "text",
+          "label": "文本",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "label": "条件",
+          "type": "CONDITIONING",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
+        [
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        -16.503997802734375,
+        240.74636840820312
+      ],
+      "size": [
+        315,
+        98
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "ckpt_name",
+          "label": "Checkpoint名称",
+          "type": "COMBO",
+          "widget": {
+            "name": "ckpt_name"
+          },
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "label": "模型",
+          "type": "MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "label": "CLIP",
+          "type": "CLIP",
+          "links": [
+            3,
+            5
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "label": "VAE",
+          "type": "VAE",
+          "links": [
+            8
+          ],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+        "v1-5-pruned-emaonly.ckpt"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1209,
+        188
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "label": "Latent",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "name": "vae",
+          "label": "VAE",
+          "type": "VAE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "label": "图像",
+          "type": "IMAGE",
+          "links": [
+            12
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [
+        473,
+        609
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "label": "Latent",
+          "type": "LATENT",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        512,
+        512,
+        1
+      ]
+    },
+    {
+      "id": 11,
+      "type": "RiceRoundInputTextNode",
+      "pos": [
+        -192.8919677734375,
+        -94.64482116699219
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "label": "STRING",
+          "type": "STRING",
+          "links": [
+            10
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_riceround",
+        "ver": "4f9bb568efd29815148c54edf41eb1e5f040098b",
+        "Node name for S&R": "RiceRoundInputTextNode"
+      },
+      "widgets_values": [
+        "1 dog",
+        [
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": 12,
+      "type": "RiceRoundSimpleChoiceNode",
+      "pos": [
+        -410.595458984375,
+        246.42388916015625
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "value",
+          "label": "value",
+          "type": "COMBO",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_riceround",
+        "ver": "4f9bb568efd29815148c54edf41eb1e5f040098b",
+        "Node name for S&R": "RiceRoundSimpleChoiceNode"
+      },
+      "widgets_values": [
+        "ckpt_name",
+        "1.5\\dreamshaper_8_v8.safetensors"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "RiceRoundEncryptNode",
+      "pos": [
+        1510.3780517578125,
+        289.9645690917969
+      ],
+      "size": [
+        400,
+        318
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "label": "images",
+          "type": "IMAGE",
+          "link": 12
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui_riceround",
+        "ver": "4f9bb568efd29815148c54edf41eb1e5f040098b",
+        "Node name for S&R": "RiceRoundEncryptNode"
+      },
+      "widgets_values": [
+        "Unsaved Workflow - ComfyUI",
+        "7bd02cb89b0fdeb142dcadc58dcc7ba9",
+        null
+      ]
+    },
+    {
+      "id": 14,
+      "type": "RiceRoundRandomSeedNode",
+      "pos": [
+        552.6851196289062,
+        88.35224914550781
+      ],
+      "size": [
+        210,
+        26
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "label": "INT",
+          "type": "INT",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_riceround",
+        "ver": "4f9bb568efd29815148c54edf41eb1e5f040098b",
+        "Node name for S&R": "RiceRoundRandomSeedNode"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      4,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      5,
+      0,
+      3,
+      3,
+      "LATENT"
+    ],
+    [
+      3,
+      4,
+      1,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      6,
+      0,
+      3,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      4,
+      1,
+      7,
+      0,
+      "CLIP"
+    ],
+    [
+      6,
+      7,
+      0,
+      3,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      3,
+      0,
+      8,
+      0,
+      "LATENT"
+    ],
+    [
+      8,
+      4,
+      2,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      10,
+      11,
+      0,
+      6,
+      1,
+      "STRING"
+    ],
+    [
+      11,
+      12,
+      0,
+      4,
+      0,
+      "COMBO"
+    ],
+    [
+      12,
+      8,
+      0,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      13,
+      14,
+      0,
+      3,
+      4,
+      "INT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7972024500000006,
+      "offset": [
+        1381.5789126523111,
+        375.7707577101947
+      ]
+    },
+    "node_versions": {
+      "comfy-core": "0.3.12",
+      "ComfyUI_RiceRound": "d3b0a8353c18e926eaaeb27f72a72c46d8b13caa"
+    }
+  },
+  "version": 0.4
 }

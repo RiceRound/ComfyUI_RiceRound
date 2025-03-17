@@ -139,7 +139,6 @@ class RiceRoundEncryptNode:
                     PromptServer.instance.send_sync(
                         "riceround_toast", {"content": "发布失败，请检查发布步骤", "type": "error"}
                     )
-                    return {}
                 else:
                     PromptServer.instance.send_sync(
                         "riceround_toast",
@@ -575,8 +574,10 @@ class Encrypt:
     def add_decrypt_node(self, workflow):
         new_node_ids = set()
         self.last_node_id += 1
+        decrypt_node_id = self.last_node_id
+        decrypt_to_save_link_id = self.last_link_id + 1
         encrypt_node = {
-            "id": self.last_node_id,
+            "id": decrypt_node_id,
             "type": "RiceRoundDecryptNode",
             "pos": [420, 0],
             "size": [500, 150],
@@ -593,7 +594,10 @@ class Encrypt:
                     "slot_index": 0,
                 }
             ],
-            "properties": {"Node name for S&R": "RiceRoundDecryptNode"},
+            "properties": {
+                "Node name for S&R": "RiceRoundDecryptNode",
+                "cnr_id": "comfyui_riceround",
+            },
             "widgets_values": [str(self.template_id), 735127949069071, "randomize"],
         }
         for idx, (owner_id, owner_node) in enumerate(self.input_node_map.items()):
@@ -611,11 +615,38 @@ class Encrypt:
             encrypt_node["inputs"].append(input_entry)
             if link_type not in ["IMAGE", "STRING"]:
                 link_type = "STRING"
-            links = [link_id, owner_id, 0, self.last_node_id, idx, link_type]
+            links = [link_id, owner_id, 0, decrypt_node_id, idx, link_type]
             workflow["links"].append(links)
+        self.last_node_id += 1
+        save_image_node = {
+            "id": self.last_node_id,
+            "type": "SaveImage",
+            "pos": [982, 5],
+            "size": [315, 58],
+            "flags": {},
+            "order": 21,
+            "mode": 0,
+            "inputs": [
+                {
+                    "name": "images",
+                    "type": "IMAGE",
+                    "link": decrypt_to_save_link_id,
+                    "label": "图像",
+                }
+            ],
+            "outputs": [],
+            "properties": {"Node name for S&R": "SaveImage", "cnr_id": "comfy-core"},
+            "widgets_values": ["ComfyUI"],
+        }
+        encrypt_node["outputs"][0]["links"] = [decrypt_to_save_link_id]
+        workflow["links"].append(
+            [decrypt_to_save_link_id, decrypt_node_id, 0, self.last_node_id, 0, "IMAGE"]
+        )
+        new_node_ids.add(decrypt_node_id)
         new_node_ids.add(self.last_node_id)
-        workflow["nodes"].append(encrypt_node)
+        workflow["nodes"].extend([encrypt_node, save_image_node])
         workflow["last_node_id"] = self.last_node_id
+        workflow["last_link_id"] = decrypt_to_save_link_id
         return new_node_ids
 
     def output_file(self, workflow, prefix):

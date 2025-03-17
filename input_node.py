@@ -85,7 +85,6 @@ class RiceRoundSimpleImageNode(LoadImage):
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     CATEGORY = "RiceRound/Input"
     FUNCTION = "load_image"
 
@@ -100,7 +99,6 @@ class RiceRoundImageNode(LoadImage):
 
     RETURN_TYPES = "IMAGE", "MASK"
     RETURN_NAMES = "image", "mask"
-    OUTPUT_NODE = True
     CATEGORY = "RiceRound/Input"
     FUNCTION = "load_image"
 
@@ -122,7 +120,6 @@ class RiceRoundDownloadImageNode:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load_image"
     CATEGORY = "RiceRound/Input"
 
@@ -142,7 +139,6 @@ class RiceRoundDownloadImageAndMaskNode:
 
     RETURN_TYPES = "IMAGE", "MASK"
     RETURN_NAMES = "image", "mask"
-    OUTPUT_NODE = True
     FUNCTION = "load_image"
     CATEGORY = "RiceRound/Input"
 
@@ -194,7 +190,6 @@ class RiceRoundImageBridgeNode:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "bridge"
     CATEGORY = "RiceRound/Input"
 
@@ -212,7 +207,6 @@ class RiceRoundMaskBridgeNode:
 
     RETURN_TYPES = ("MASK",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "bridge"
     CATEGORY = "RiceRound/Input"
 
@@ -230,7 +224,6 @@ class RiceRoundDownloadMaskNode:
 
     RETURN_TYPES = ("MASK",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load_mask"
     CATEGORY = "RiceRound/Input"
 
@@ -267,7 +260,6 @@ class RiceRoundIntNode:
 
     RETURN_TYPES = ("INT",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load"
     CATEGORY = "RiceRound/Input"
 
@@ -310,7 +302,6 @@ class RiceRoundFloatNode:
 
     RETURN_TYPES = ("FLOAT",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load"
     CATEGORY = "RiceRound/Input"
 
@@ -328,7 +319,6 @@ class RiceRoundStrToFloatNode:
 
     RETURN_TYPES = ("FLOAT",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load"
     CATEGORY = "RiceRound/Input"
 
@@ -365,7 +355,6 @@ class RiceRoundStrToBooleanNode:
 
     RETURN_TYPES = ("BOOLEAN",)
     RETURN_NAMES = ("value",)
-    OUTPUT_NODE = True
     FUNCTION = "load"
     CATEGORY = "RiceRound/Input"
 
@@ -389,7 +378,6 @@ class RiceRoundInputTextNode:
         }
 
     RETURN_TYPES = ("STRING",)
-    OUTPUT_NODE = True
     FUNCTION = "load"
     CATEGORY = "RiceRound/Input"
 

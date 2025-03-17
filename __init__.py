@@ -282,11 +282,21 @@ if is_on_riceround:
 @web.middleware
 async def check_login_status(request, handler):
     if is_on_riceround:
+        if request.path.startswith("/internal/"):
+            return await handler(request)
         if (
             request.headers.get("owner") == "share_client"
             and request.headers.get("client_random") == client_random
         ):
             return await handler(request)
+        else:
+            try:
+                headers = dict(request.headers)
+                logging.warn(f"### check_login_status failed - Headers: {headers}")
+            except Exception as e:
+                logging.warn(
+                    f"### check_login_status failed - Error parsing request: {str(e)}"
+                )
         return web.json_response({"error": "Access denied"}, status=403)
     return await handler(request)
 
